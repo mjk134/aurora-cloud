@@ -1,3 +1,7 @@
+import { BinaryLike } from "crypto";
+
+type BlobPart = Blob | BinaryLike;
+
 export type Message = {
     content: string;
     [key: `files[${number}]`]: string;

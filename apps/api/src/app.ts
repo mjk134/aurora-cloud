@@ -1,6 +1,11 @@
 import { join } from 'path';
+import 'dotenv/config';
 import AutoLoad, {AutoloadPluginOptions} from '@fastify/autoload';
 import { FastifyPluginAsync, FastifyServerOptions } from 'fastify';
+
+import { Client } from "./handlers/discord/client"
+
+const client = new Client(process.env.TOKEN!);
 
 export interface AppOptions extends FastifyServerOptions, Partial<AutoloadPluginOptions> {
 
@@ -35,4 +40,4 @@ const app: FastifyPluginAsync<AppOptions> = async (
 };
 
 export default app;
-export { app, options }
+export { app, options, client }

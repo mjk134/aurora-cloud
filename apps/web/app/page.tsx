@@ -1,25 +1,22 @@
-import Image from "next/image";
+import { downloadFile } from "./actions";
 import styles from "./page.module.css";
+import FormTest from "./components";
 
-export default function Page(): JSX.Element {
-async function createUpload(data: FormData) {
-  'use server'
-  fetch("http://localhost:3000/upload", {
-    method: "POST",
-    body: data,
-  });
+const DownloadFileTest = ({ data }) => {
+  'use client'
+  return (
+    <button>Download File</button>
+  )
 }
+
+export default async function Page(): Promise<JSX.Element> {
+  const data = await downloadFile();
 
   return (
     <main className={styles.main}>
-      <form action={createUpload}>
-        <h1>Upload Test</h1>
-        <div>
-          <label htmlFor="file">Select File</label>
-          <input type="file" id="file" name="file" />
-        </div>
-        <button type="submit">Upload</button>
-      </form>
+      <h1>Upload Test</h1>
+      <FormTest />
+      <DownloadFileTest data={data} />
     </main>
   );
 }

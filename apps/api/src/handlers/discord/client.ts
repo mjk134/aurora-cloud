@@ -1,11 +1,12 @@
-import { REST } from "./rest";
-import { Attachment, Message, UploadChunkOptions, UploadChunksOptions } from "./types";
+import { REST } from "./rest.js";
+import { Attachment, Message, UploadChunkOptions, UploadChunksOptions } from "./types/index.js";
 import fs from 'node:fs/promises'
 import { randomUUID } from 'node:crypto';
 
 export class Client {
     private _token: string;
     private rest : REST
+    private DEFAULT_CHANNEL = '949673655250599959'
 
     constructor(token :string) {
         this._token = token;
@@ -24,7 +25,7 @@ export class Client {
             `/channels/${channelId}/messages`,
             { body: data }
         )
-        const msg = await res.json();
+        const msg = await res.json() as Record<string, any>;
         return msg.attachments[0] as Attachment;
     }
 
@@ -44,7 +45,7 @@ export class Client {
             `/channels/${channelId}/messages`,
             { body: data }
         )
-        const msg = await res.json();
+        const msg = await res.json() as Record<string, any>;
         return msg.attachments as Attachment[];
     }
 
@@ -82,6 +83,27 @@ export class Client {
         }
     }
 
+    public async uploadBufferFile({ channelId, fileBuffer }: { channelId?: string, fileBuffer: Buffer }): Promise<Message> {
+        const fileId = randomUUID();
+        const chunks = this.chunkFile(fileBuffer);
+        const attachments: Attachment[] = [];
+        for (let i = 0; i < chunks.length; i++) {
+            const chunk = chunks[i];
+            if (!chunk) {
+                console.log('Failed to read chunk', i, chunk);
+                continue;
+            }
+            const attachment = await this.uploadChunk({ channelId: channelId ?? this.DEFAULT_CHANNEL, chunkId: randomUUID(), fileId, chunkData: chunk });
+            attachments.push(attachment);
+        }
+        return {
+            content: 'file uploaded',
+            'files[0]': fileId,
+            payload_json: JSON.stringify({ content: fileId }),
+            attachments: attachments.map(a => a.url)
+        }
+    }
+
     private chunkFileAsText(file: Buffer): Buffer[] {
         // Max chunk size is 2000 UTF-16 characters
         console.log('file.length', file.length);
@@ -102,7 +124,6 @@ export class Client {
         const blob = new Blob([chunkData])
         const decoder = new TextDecoder('UTF-16')
         const d = decoder.decode(await blob.arrayBuffer())
-        console.log('d', d.length)
         const data = {
             content: `\\${d}`,
         }
@@ -112,11 +133,10 @@ export class Client {
             { body: JSON.stringify(data) },
             true
         )
-        console.log(res.headers.get('X-RateLimit-Remaining'))
 
-        const msg = await res.json();
+        const msg = await res.json() as {};
 
-        return msg;
+        return msg as {};
     }
 
 
@@ -124,7 +144,7 @@ export class Client {
         const file = await fs.readFile(filePath);
         const fileId = randomUUID();
         const chunks = this.chunkFileAsText(file);
-        const contents: Message[] = [];
+        const contents: {}[] = [];
         for (let i = 0; i < chunks.length; i++) {
             const chunk = chunks[i];
             if (!chunk) {
@@ -132,6 +152,7 @@ export class Client {
                 continue;
             }
             const content = await this.uploadChunkAsText({ channelId, chunkId: randomUUID(), fileId, chunkData: chunk });
+            contents.push(content);
         }
         return {}
     }

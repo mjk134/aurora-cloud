@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "This project was bootstrapped with Fastify-CLI.",
   "main": "app.ts",
+  "private": true,
   "directories": {
     "test": "test"
   },
@@ -21,6 +22,7 @@
     "@fastify/autoload": "^5.0.0",
     "@fastify/multipart": "^8.1.0",
     "@fastify/sensible": "^5.0.0",
+    "dotenv": "^16.4.5",
     "fastify": "^4.0.0",
     "fastify-cli": "^6.1.0",
     "fastify-plugin": "^4.0.0"

@@ -5,6 +5,10 @@ import { FastifyPluginAsync, FastifyServerOptions } from 'fastify';
 
 import { Client } from "./handlers/discord/client"
 
+if (!process.env.TOKEN) {
+  throw new Error('No token provided')
+}
+
 const client = new Client(process.env.TOKEN!);
 
 export interface AppOptions extends FastifyServerOptions, Partial<AutoloadPluginOptions> {
@@ -12,6 +16,7 @@ export interface AppOptions extends FastifyServerOptions, Partial<AutoloadPlugin
 }
 // Pass --options via CLI arguments in command to enable these options.
 const options: AppOptions = {
+  logger: true
 }
 
 const app: FastifyPluginAsync<AppOptions> = async (

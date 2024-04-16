@@ -26,6 +26,7 @@ export class Client {
             { body: data }
         )
         const msg = await res.json() as Record<string, any>;
+        console.log(msg)
         return msg.attachments[0] as Attachment;
     }
 
@@ -155,5 +156,18 @@ export class Client {
             contents.push(content);
         }
         return {}
+    }
+
+    public async downloadFile({ chunks }: { chunks: Record<string, any>; }): Promise<Buffer> {
+        const bufArr = [];
+        // Loop over chunk urls
+        for (let i = 0; i < chunks.length; i++) {
+            const res = await fetch(chunks[i].url);
+            const buf = await res.arrayBuffer();
+            // Fetch returns array buffer so we have to convert to a normal buffer (just changing classes, might cause perf issues)
+            bufArr.push(Buffer.from(buf))
+        }
+        // Concat to get the final buffer for the file
+        return Buffer.concat(bufArr);
     }
 }

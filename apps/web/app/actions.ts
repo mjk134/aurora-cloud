@@ -9,7 +9,7 @@ export async function createUpload(data: FormData) {
     let d = await res.text();
     if (d === "no file") {
       console.log("no file");
-      return null;
+      return { error: true };
     }
     let json = JSON.parse(d);
     const file = data.get("file") as File;
@@ -21,10 +21,11 @@ export async function createUpload(data: FormData) {
         })
     )
     console.log(fileInsert, chunkInsert)
-    return { fileInsert, chunkInsert }
+    return { error: false }
 }
 
-export async function downloadFile() {
-    const res = await sql`SELECT * FROM file`;
-    console.log(res)
+export async function downloadFile(name: string, fileId: string) {
+    const chunkArr = await sql`SELECT * FROM file_storage WHERE id = ${fileId} ORDER BY chunk_index`;
+    const stringified = Buffer.from(JSON.stringify({ file: name, chunks: chunkArr.rows })).toString('base64');
+    return `http://localhost:3000/download?chunks=${stringified}`;
   }

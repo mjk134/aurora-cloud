@@ -1,22 +1,26 @@
-import { downloadFile } from "./actions";
 import styles from "./page.module.css";
-import FormTest from "./components";
+import FormTest, { DownloadFileTest } from "./components";
+import { sql } from "@vercel/postgres";
 
-const DownloadFileTest = ({ data }) => {
-  'use client'
-  return (
-    <button>Download File</button>
-  )
-}
 
 export default async function Page(): Promise<JSX.Element> {
-  const data = await downloadFile();
+  const files = await sql`SELECT * FROM file`;
 
   return (
     <main className={styles.main}>
       <h1>Upload Test</h1>
       <FormTest />
-      <DownloadFileTest data={data} />
+      <div></div>
+      {
+        files.rows.map((file) => {
+          return (
+            <div key={file.id} className="flex row">
+              <p>{file.name}</p>
+              <DownloadFileTest name={file.name} id={file.id} />
+            </div>
+          )
+        })
+      }
     </main>
   );
 }

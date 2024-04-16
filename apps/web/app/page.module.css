@@ -5,6 +5,9 @@
   align-items: center;
   padding: 6rem;
   min-height: 100vh;
+  font-family: system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+  "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+  "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 .vercelLogo {

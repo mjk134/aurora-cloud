@@ -162,6 +162,7 @@ export class Client {
         const bufArr = [];
         // Loop over chunk urls
         for (let i = 0; i < chunks.length; i++) {
+            // Extract message id and fetch if no url content available (only do once, if fail do it for the rest)
             const res = await fetch(chunks[i].url);
             const buf = await res.arrayBuffer();
             // Fetch returns array buffer so we have to convert to a normal buffer (just changing classes, might cause perf issues)

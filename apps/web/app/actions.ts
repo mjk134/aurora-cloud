@@ -7,6 +7,7 @@ export async function createUpload(data: FormData) {
       body: data,
     });
     let d = await res.text();
+    console.log(d)
     if (d === "no file") {
       console.log("no file");
       return { error: true };
@@ -15,9 +16,9 @@ export async function createUpload(data: FormData) {
     const file = data.get("file") as File;
     const fileInsert = await sql`INSERT INTO file VALUES(${json['files[0]']}, ${file.name});`
     const chunkInsert = await Promise.all(
-        (json.attachments as string[])
+        (json.attachments as Record<string, string>[])
         .map((a ,index) => {
-            return sql`INSERT INTO file_storage VALUES(${index}, ${a}, ${json['files[0]']});`
+            return sql`INSERT INTO text_storage VALUES(${json['files[0]']}, ${index}, ${a.id}, 949673655250599959);`
         })
     )
     console.log(fileInsert, chunkInsert)
@@ -25,7 +26,7 @@ export async function createUpload(data: FormData) {
 }
 
 export async function downloadFile(name: string, fileId: string) {
-    const chunkArr = await sql`SELECT * FROM file_storage WHERE id = ${fileId} ORDER BY chunk_index`;
+    const chunkArr = await sql`SELECT * FROM text_storage WHERE id = ${fileId} ORDER BY chunk_index`;
     const stringified = Buffer.from(JSON.stringify({ file: name, chunks: chunkArr.rows })).toString('base64');
     return `http://localhost:3000/download?chunks=${stringified}`;
   }

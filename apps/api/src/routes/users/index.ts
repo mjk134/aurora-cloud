@@ -6,4 +6,4 @@ const users: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   })
 }
 
-export default users;
+export default usersm;

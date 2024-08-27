@@ -13,13 +13,14 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     const data = await request.file()
 
     const fileBuffer = await data?.toBuffer()
-    request.log.info(`Data size is: ${fileBuffer?.byteLength} bytes`)
+    request.log.info(`Data size is: ${fileBuffer?.byteLength} bytes.`)
 
     if (!fileBuffer) {
       return 'no file' // ggwp buffer diff
     }
   
-    const res = await client.uploadBufferFile({ fileBuffer: fileBuffer })
+    const res = await client.uploadBufferFile({ fileBuffer: fileBuffer });
+    request.log.info('Sending response:', res)
 
     return res
   })

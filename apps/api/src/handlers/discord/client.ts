@@ -26,8 +26,11 @@ export class Client {
             { body: data }
         )
         const msg = await res.json() as Record<string, any>;
-        console.log(msg)
-        return msg.attachments[0] as Attachment;
+        const attachment = {
+            ...msg.attachments[0],
+            message_id: msg.id
+        }
+        return attachment as Attachment;
     }
 
     public async uploadChunks({ channelId, chunkIds, fileId, chunkData }: UploadChunksOptions): Promise<Attachment[]> {
@@ -80,7 +83,10 @@ export class Client {
             content: 'file uploaded',
             'files[0]': fileId,
             payload_json: JSON.stringify({ content: fileId }),
-            attachments: attachments.map(a => a.url)
+            attachments: attachments.map(a => ({
+                url: a.url,
+                id: a.message_id,
+            }))
         }
     }
 
@@ -101,7 +107,12 @@ export class Client {
             content: 'file uploaded',
             'files[0]': fileId,
             payload_json: JSON.stringify({ content: fileId }),
-            attachments: attachments.map(a => a.url)
+            attachments: attachments.map(a => {
+                return {
+                    url: a.url,
+                    id: a.message_id,
+                }
+            })
         }
     }
 
@@ -121,7 +132,7 @@ export class Client {
         return chunks;
     }
 
-    private async uploadChunkAsText({ channelId, chunkId, fileId, chunkData }: UploadChunkOptions): Promise<{}> {
+    private async uploadChunkAsText({ channelId, chunkId, fileId, chunkData }: UploadChunkOptions): Promise<Record<string, any>> {
         const blob = new Blob([chunkData])
         const decoder = new TextDecoder('UTF-16')
         const d = decoder.decode(await blob.arrayBuffer())
@@ -135,9 +146,9 @@ export class Client {
             true
         )
 
-        const msg = await res.json() as {};
+        const msg = await res.json() as Record<string, any>;
 
-        return msg as {};
+        return msg;
     }
 
 
@@ -158,17 +169,28 @@ export class Client {
         return {}
     }
 
-    public async downloadFile({ chunks }: { chunks: Record<string, any>; }): Promise<Buffer> {
+    public async downloadFile({ chunks }: { chunks: Record<string, any>[]; }): Promise<Buffer> {
         const bufArr = [];
+        const messages = await Promise.all(chunks.map(c => this.getAttachmentUrl(c)))
         // Loop over chunk urls
-        for (let i = 0; i < chunks.length; i++) {
+        for (let i = 0; i < messages.length; i++) {
             // Extract message id and fetch if no url content available (only do once, if fail do it for the rest)
-            const res = await fetch(chunks[i].url);
+            const res = await fetch(messages[i].url);
             const buf = await res.arrayBuffer();
             // Fetch returns array buffer so we have to convert to a normal buffer (just changing classes, might cause perf issues)
             bufArr.push(Buffer.from(buf))
         }
         // Concat to get the final buffer for the file
         return Buffer.concat(bufArr);
+    }
+
+    private async getAttachmentUrl(chunk: Record<string, string>) {
+        const msgid = chunk.message_id;
+        const channelid = chunk.channel_id;
+        const msg = await this.rest.get(
+            `/channels/${channelid}/messages/${msgid}`
+            )
+        const d = await msg.json()
+        return (d as Record<string, any>).attachments[0].url;
     }
 }

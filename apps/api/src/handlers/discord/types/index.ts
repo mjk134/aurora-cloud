@@ -6,7 +6,7 @@ export type Message = {
     content: string;
     [key: `files[${number}]`]: string;
     payload_json: ReturnType<typeof JSON.stringify>;
-    attachments: string[];
+    attachments: Record<string, string>[];
 }
 
 export type Attachment = {
@@ -14,6 +14,7 @@ export type Attachment = {
     filename: string;
     size: number;
     url: string;
+    message_id: string;
 }
 
 export interface UploadChunkOptions {

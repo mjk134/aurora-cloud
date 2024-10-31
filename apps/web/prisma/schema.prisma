@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  user_id   String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password_hash String
+  created_at DateTime @default(now())
+  is_oauth  Boolean  @default(false)
+
+  // Relations
+  oauth OAuthUsers[]
+  files File[]
+  folders Folder[]
+}
+
+model OAuthUsers {
+  user_id   String   @id @default(cuid())
+  users Users @relation(fields: [user_id], references: [user_id])
+  google_auth Boolean @default(false)
+  x_auth   Boolean @default(false)
+}
+
+model DiscordStorage {
+  chunk_id String @id @default(cuid())
+  user_id String
+  file_id String
+  channel_id String
+  chunk_index Int
+  chunk_url String
+  message_id String
+  created_at DateTime @default(now())
+  is_text Boolean @default(false)
+}
+
+model TelegramStorage {
+  chunk_id String @id @default(cuid())
+  user_id String
+  file_id String
+  chat_id String
+  chunk_index Int
+  message_id String
+  url String
+  created_at DateTime @default(now())
+}
+
+model YouTubeStorage {
+  chunk_id String @id @default(cuid())
+  user_id String
+  video_id String
+  chunk_index Int
+  url String
+  created_at DateTime @default(now())
+}
+
+model File {
+  file_id String @id @default(cuid())
+  user_id String
+  file_name String // including extension
+  file_type String // Type of storage
+  file_size Int
+  created_at DateTime @default(now())
+
+  users Users @relation(fields: [user_id], references: [user_id])
+
+  // Relations
+  parents Parent[]
+}
+
+model Folder {
+  folder_id String @id @default(cuid())
+  user_id String
+
+  // Relations
+  users Users @relation(fields: [user_id], references: [user_id])
+  parents Parent[]
+}
+
+model Parent {
+  parent_id String @id @default(cuid())
+  folder_id String
+  file_id String
+
+  folders Folder @relation(fields: [folder_id], references: [folder_id])
+  files File @relation(fields: [file_id], references: [file_id])
+}

@@ -1,7 +1,12 @@
+/* 
+ * These types are local to the handler, hence they are not located in the shared folder.
+ * Used mainly in the client.ts file.  
+ */
 import { BinaryLike } from "crypto";
 
 type BlobPart = Blob | BinaryLike;
 
+// Return type from discord?
 export type Message = {
     content: string;
     [key: `files[${number}]`]: string;
@@ -9,6 +14,7 @@ export type Message = {
     attachments: Record<string, string>[];
 }
 
+// Returned from Discord?
 export type Attachment = {
     id: string;
     filename: string;
@@ -17,6 +23,8 @@ export type Attachment = {
     message_id: string;
 }
 
+
+// Function parameters
 export interface UploadChunkOptions {
     channelId: string;
     chunkId: string;

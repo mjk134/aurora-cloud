@@ -30,6 +30,7 @@
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@repo/types": "workspace:*",
     "@types/node": "^20.10.6",
     "concurrently": "^8.2.2",
     "fastify-tsconfig": "^2.0.0",

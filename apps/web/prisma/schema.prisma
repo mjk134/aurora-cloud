@@ -4,13 +4,15 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 model Users {
@@ -25,6 +27,9 @@ model Users {
   oauth OAuthUsers[]
   files File[]
   folders Folder[]
+  discord_storage DiscordStorage[]
+  telegram_storage TelegramStorage[]
+  youtube_storage YouTubeStorage[]
 }
 
 model OAuthUsers {
@@ -44,6 +49,9 @@ model DiscordStorage {
   message_id String
   created_at DateTime @default(now())
   is_text Boolean @default(false)
+
+  users Users @relation(fields: [user_id], references: [user_id])
+  files File @relation(fields: [file_id], references: [file_id])
 }
 
 model TelegramStorage {
@@ -55,15 +63,24 @@ model TelegramStorage {
   message_id String
   url String
   created_at DateTime @default(now())
+
+  // Relations
+  users Users @relation(fields: [user_id], references: [user_id])
+  files File @relation(fields: [file_id], references: [file_id])
 }
 
 model YouTubeStorage {
   chunk_id String @id @default(cuid())
   user_id String
   video_id String
+  file_id String
   chunk_index Int
   url String
   created_at DateTime @default(now())
+
+  // Relations
+  users Users @relation(fields: [user_id], references: [user_id])
+  files File @relation(fields: [file_id], references: [file_id])
 }
 
 model File {
@@ -78,6 +95,9 @@ model File {
 
   // Relations
   parents Parent[]
+  discord_storage DiscordStorage[]
+  telegram_storage TelegramStorage[]
+  youtube_storage YouTubeStorage[]
 }
 
 model Folder {

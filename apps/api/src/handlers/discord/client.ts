@@ -2,6 +2,7 @@ import { REST } from "./rest.js";
 import { Attachment, Message, UploadChunkOptions, UploadChunksOptions } from "./types/index.js";
 import fs from 'node:fs/promises'
 import { randomUUID } from 'node:crypto';
+import {DiscordResponse} from '@repo/types'
 
 export class Client {
     private _token: string;
@@ -90,7 +91,7 @@ export class Client {
         }
     }
 
-    public async uploadBufferFile({ channelId, fileBuffer }: { channelId?: string, fileBuffer: Buffer }): Promise<Message> {
+    public async uploadBufferFile({ channelId, fileBuffer }: { channelId?: string, fileBuffer: Buffer }): Promise<[string, DiscordResponse]> {
         const fileId = randomUUID();
         const chunks = this.chunkFile(fileBuffer);
         const attachments: Attachment[] = [];
@@ -103,17 +104,14 @@ export class Client {
             const attachment = await this.uploadChunk({ channelId: channelId ?? this.DEFAULT_CHANNEL, chunkId: randomUUID(), fileId, chunkData: chunk });
             attachments.push(attachment);
         }
-        return {
-            content: 'file uploaded',
-            'files[0]': fileId,
-            payload_json: JSON.stringify({ content: fileId }),
-            attachments: attachments.map(a => {
+        return [fileId, {
+            chunks: attachments.map(a => {
                 return {
                     url: a.url,
-                    id: a.message_id,
+                    message_id: a.message_id,
                 }
             })
-        }
+        }]
     }
 
     private chunkFileAsText(file: Buffer): Buffer[] {

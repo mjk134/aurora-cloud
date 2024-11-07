@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.1",
+    "@prisma/adapter-neon": "^5.21.1",
+    "@prisma/client": "5.21.1",
     "@repo/ui": "workspace:*",
     "@vercel/postgres": "^0.7.2",
     "next": "^14.0.4",

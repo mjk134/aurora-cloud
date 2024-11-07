@@ -1,5 +1,6 @@
 import { FastifyPluginAsync } from "fastify"
 import { client } from "../../app.js" // i love this
+import { UploadResponse } from "@repo/types"
 
 
 const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
@@ -9,20 +10,29 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     }
   })
 
-  fastify.post('/', async function (request, reply) {
+  fastify.post('/', async function (request, reply) : Promise<UploadResponse> {
     const data = await request.file()
 
     const fileBuffer = await data?.toBuffer()
     request.log.info(`Data size is: ${fileBuffer?.byteLength} bytes.`)
 
     if (!fileBuffer) {
-      return 'no file' // ggwp buffer diff
+      return {
+        error: true,
+        message: "no file"
+      } // ggwp buffer diff
     }
   
-    const res = await client.uploadBufferFile({ fileBuffer: fileBuffer });
-    request.log.info('Sending response:', res)
+    const [fileId, dcResponse] = await client.uploadBufferFile({ fileBuffer: fileBuffer });
+    request.log.info('Sending response:', dcResponse)
 
-    return res
+    return {
+      error: false,
+      message: "file uploaded",
+      fileId,
+      type: "discord",
+      discord: dcResponse
+    }
   })
 }
 

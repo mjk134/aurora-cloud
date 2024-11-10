@@ -30,6 +30,7 @@ model Users {
   discord_storage DiscordStorage[]
   telegram_storage TelegramStorage[]
   youtube_storage YouTubeStorage[]
+  Session Session[]
 }
 
 model OAuthUsers {
@@ -52,6 +53,13 @@ model DiscordStorage {
 
   users Users @relation(fields: [user_id], references: [user_id])
   files File @relation(fields: [file_id], references: [file_id])
+}
+
+model Session {
+  token String   @id @default(cuid())
+  user_id       String
+  expires      DateTime
+  users Users @relation(fields: [user_id], references: [user_id])
 }
 
 model TelegramStorage {

@@ -17,13 +17,13 @@ export async function createSession(id: string) {
 
   const sessionId = sessionData.token;
 
-  // Create session using JWT using jose
   const session = {
     id: sessionId,
     expires: expiresAt.toISOString(),
     userId: id,
   };
 
+  // TODO: Use the auth secret to encode the session token
   // 2. Sign the session token
   const token = Buffer.from(JSON.stringify(session)).toString("base64");
 

@@ -1,12 +1,12 @@
 'use client'
-import { useFormStatus, useFormState } from "react-dom";
+import { useFormStatus } from "react-dom";
 import { createUpload, downloadFile } from "./actions";
 import { useState, useTransition } from "react";
 
 const TestForm = () => {
     'use client'
     const { pending } = useFormStatus();
-    const [state, action] = useFormState<{error: boolean}>((state) => {
+    const [state, action] = useActionState<{error: boolean}>((state) => {
       return state;
     }, { error: false });
   

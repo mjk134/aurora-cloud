@@ -1,11 +1,13 @@
-import styles from "./page.module.css";
+
 import FormTest, { DownloadFileTest } from "./components";
+
+import type { JSX } from "react";
 
 
 export default async function Page(): Promise<JSX.Element> {
 
   return (
-    <main className={styles.main}>
+    <main>
       <h1>Upload Test</h1>
       <FormTest />
       <div></div>

@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import db from "./database";
+import { Users } from "@prisma/client";
 
 export async function createSession(id: string) {
   const currentSession = await getSession();
@@ -66,7 +67,7 @@ export const getVerfiedSession = async () => {
 
   const data = await db.session.findUnique({
     where: {
-      token: (session as Record<string, any>).id,
+      token: session.id,
     },
   });
 
@@ -76,7 +77,7 @@ export const getVerfiedSession = async () => {
   return session;
 };
 
-export async function getUserFromSession() {
+export async function getUserFromSession(): Promise<Users | null> {
   const session = await getVerfiedSession();
 
   if (!session) return null;
@@ -90,7 +91,7 @@ export async function getUserFromSession() {
   return user;
 }
 
-export async function updateSession() {
+export async function updateSession(): Promise<Session | null> {
   const token = (await cookies()).get("snowflake");
 
   if (!token) return null;

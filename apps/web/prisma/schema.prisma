@@ -1,127 +1,107 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-datasource db {
-  provider = "postgresql"
-  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
-}
-
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
 }
 
-model Users {
-  user_id   String   @id @default(cuid())
-  email     String   @unique
-  username  String   @unique
-  password_hash String
-  created_at DateTime @default(now())
-  is_oauth  Boolean  @default(false)
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
 
-  // Relations
-  oauth OAuthUsers[]
-  files File[]
-  folders Folder[]
-  discord_storage DiscordStorage[]
+model Users {
+  user_id          String            @id @default(cuid())
+  username         String            @unique
+  password_hash    String
+  created_at       DateTime          @default(now())
+  is_oauth         Boolean           @default(false)
+  discord_storage  DiscordStorage[]
+  files            File[]
+  folders          Folder[]
+  oauth            OAuthUsers?
+  Session          Session[]
   telegram_storage TelegramStorage[]
-  youtube_storage YouTubeStorage[]
-  Session Session[]
+  youtube_storage  YouTubeStorage[]
 }
 
 model OAuthUsers {
-  user_id   String   @id @default(cuid())
-  users Users @relation(fields: [user_id], references: [user_id])
-  google_auth Boolean @default(false)
-  x_auth   Boolean @default(false)
+  user_id        String @id @default(cuid())
+  google_auth_id String
+  x_auth_id      String
+  users          Users  @relation(fields: [user_id], references: [user_id])
 }
 
 model DiscordStorage {
-  chunk_id String @id @default(cuid())
-  user_id String
-  file_id String
-  channel_id String
+  chunk_id    String   @id @default(cuid())
+  user_id     String
+  file_id     String
+  channel_id  String
   chunk_index Int
-  chunk_url String
-  message_id String
-  created_at DateTime @default(now())
-  is_text Boolean @default(false)
-
-  users Users @relation(fields: [user_id], references: [user_id])
-  files File @relation(fields: [file_id], references: [file_id])
+  chunk_url   String
+  message_id  String
+  created_at  DateTime @default(now())
+  is_text     Boolean  @default(false)
+  files       File     @relation(fields: [file_id], references: [file_id])
+  users       Users    @relation(fields: [user_id], references: [user_id])
 }
 
 model Session {
-  token String   @id @default(cuid())
-  user_id       String
-  expires      DateTime
-  users Users @relation(fields: [user_id], references: [user_id])
+  token   String   @id @default(cuid())
+  user_id String
+  expires DateTime
+  users   Users    @relation(fields: [user_id], references: [user_id])
 }
 
 model TelegramStorage {
-  chunk_id String @id @default(cuid())
-  user_id String
-  file_id String
-  chat_id String
+  chunk_id    String   @id @default(cuid())
+  user_id     String
+  file_id     String
+  chat_id     String
   chunk_index Int
-  message_id String
-  url String
-  created_at DateTime @default(now())
-
-  // Relations
-  users Users @relation(fields: [user_id], references: [user_id])
-  files File @relation(fields: [file_id], references: [file_id])
+  message_id  String
+  url         String
+  created_at  DateTime @default(now())
+  files       File     @relation(fields: [file_id], references: [file_id])
+  users       Users    @relation(fields: [user_id], references: [user_id])
 }
 
 model YouTubeStorage {
-  chunk_id String @id @default(cuid())
-  user_id String
-  video_id String
-  file_id String
+  chunk_id    String   @id @default(cuid())
+  user_id     String
+  video_id    String
+  file_id     String
   chunk_index Int
-  url String
-  created_at DateTime @default(now())
-
-  // Relations
-  users Users @relation(fields: [user_id], references: [user_id])
-  files File @relation(fields: [file_id], references: [file_id])
+  url         String
+  created_at  DateTime @default(now())
+  files       File     @relation(fields: [file_id], references: [file_id])
+  users       Users    @relation(fields: [user_id], references: [user_id])
 }
 
 model File {
-  file_id String @id @default(cuid())
-  user_id String
-  file_name String // including extension
-  file_type String // Type of storage
-  file_size Int
-  created_at DateTime @default(now())
-
-  users Users @relation(fields: [user_id], references: [user_id])
-
-  // Relations
-  parents Parent[]
-  discord_storage DiscordStorage[]
+  file_id          String            @id @default(cuid())
+  user_id          String
+  file_name        String
+  file_type        String
+  file_size        Int
+  created_at       DateTime          @default(now())
+  discord_storage  DiscordStorage[]
+  users            Users             @relation(fields: [user_id], references: [user_id])
+  parents          Parent[]
   telegram_storage TelegramStorage[]
-  youtube_storage YouTubeStorage[]
+  youtube_storage  YouTubeStorage[]
 }
 
 model Folder {
-  folder_id String @id @default(cuid())
-  user_id String
-
-  // Relations
-  users Users @relation(fields: [user_id], references: [user_id])
-  parents Parent[]
+  folder_id String   @id @default(cuid())
+  user_id   String
+  users     Users    @relation(fields: [user_id], references: [user_id])
+  parents   Parent[]
 }
 
 model Parent {
   parent_id String @id @default(cuid())
   folder_id String
-  file_id String
-
-  folders Folder @relation(fields: [folder_id], references: [folder_id])
-  files File @relation(fields: [file_id], references: [file_id])
+  file_id   String
+  files     File   @relation(fields: [file_id], references: [file_id])
+  folders   Folder @relation(fields: [folder_id], references: [folder_id])
 }

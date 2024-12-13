@@ -1,5 +1,7 @@
+import LoginForm from "../../components/forms/login-form";
 import GradientBackground from "../../components/gradient-background";
 import Input from "../../components/ui/input";
+import { loginAction } from "./actions";
 
 export default function Login() {
 
@@ -15,17 +17,7 @@ export default function Login() {
                         username & password or Google/X.
                     </p>
                  </div>
-                <form className="flex gap-2 md:w-[35%] flex-col justify-start">
-                    <div className="flex flex-col gap-1">
-                        <label className="leading-[18px] text-lg">Username</label>
-                        <Input type="text" placeholder="e.g. aurora_cloud" />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label className="leading-[18px] text-lg">Password</label>
-                        <Input type="password" placeholder="super secret password" />
-                    </div>
-                    <button type="submit" className="bg-blue-500 text-white rounded-md p-2 mt-2">Sign Up</button>
-                </form>
+                <LoginForm serverAction={loginAction} />
             </div>
         </main>
     )

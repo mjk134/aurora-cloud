@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import database from "../../lib/database";
-import { hashPassword } from "../../lib/password";
+import { hashPassword, passwordRegex } from "../../lib/password";
 import { createSession } from "../../lib/session";
 import { FormActionResponse } from "../../types";
 
@@ -19,6 +19,16 @@ export async function signUpAction(prevState: any, data: FormData): Promise<Form
         return { error: true, message: "Username must be between 3 and 20 characters.", location: "username", values: { username, password } };
     }
 
+    // No spaces in username
+    if (username.includes(" ")) {
+        return { error: true, message: "Username cannot contain spaces.", location: "username", values: { username, password } };
+    }
+
+    // Only alphanumeric characters in username and . and _
+    if (!/^[a-zA-Z0-9_.]+$/.test(username)) {
+        return { error: true, message: "Username can only contain letters, numbers, periods, and underscores.", location: "username", values: { username, password } };
+    }
+
     // Check if username in use.
     const doesUsernameExist = await database.users.findUnique({
         where: {
@@ -30,12 +40,10 @@ export async function signUpAction(prevState: any, data: FormData): Promise<Form
         return { error: true, message: "Username is already in use.", location: "username", values: { username, password } };
     }
 
-
     if (password.length < 8 || password.length > 20) {
         return { error: true, message: "Password must be between 8 and 20 characters.", location: "password", values: { username, password } };
     }
     // Password strength check
-    const passwordRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.{8,})"); // TODO: CHANGE THIS
     if (!passwordRegex.test(password)) {
         return { error: true, message: "Password must contain at least one uppercase letter, one lowercase letter, and one number.", location: "password", values: { username, password } };
     }

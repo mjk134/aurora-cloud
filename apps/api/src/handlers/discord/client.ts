@@ -1,4 +1,4 @@
-import { REST } from "./rest.js";
+import { REST } from "../rest.js";
 import { Attachment, Message, UploadChunkOptions, UploadChunksOptions } from "./types/index.js";
 import fs from 'node:fs/promises'
 import { randomUUID } from 'node:crypto';
@@ -6,14 +6,23 @@ import {DiscordResponse} from '@repo/types'
 
 export class Client {
     private _token: string;
+
     private rest : REST
     private DEFAULT_CHANNEL = '949673655250599959'
 
     constructor(token :string) {
         this._token = token;
-        this.rest = new REST(this);
+        // Create a new REST client
+        this.rest = new REST({
+            baseUrl: 'https://discord.com/api/v10',
+            headers: {
+                'Authorization': `Bot ${this.token}`,
+                'User-Agent': 'DiscordBot (https://github.com/mjk134/aurora-cloud, 0.0.1'
+            }
+        });
     }
 
+    // Token getter
     get token() {
         return this._token;
     }
@@ -91,6 +100,9 @@ export class Client {
         }
     }
 
+    /**
+     * Main upload function. Recieves a file buffer from client and uploads it to discord.
+     */
     public async uploadBufferFile({ channelId, fileBuffer }: { channelId?: string, fileBuffer: Buffer }): Promise<[string, DiscordResponse]> {
         const fileId = randomUUID();
         const chunks = this.chunkFile(fileBuffer);
@@ -117,6 +129,7 @@ export class Client {
     private chunkFileAsText(file: Buffer): Buffer[] {
         // Max chunk size is 2000 UTF-16 characters
         console.log('file.length', file.length);
+        // 1999 * 2 = 3998 (UTF-16 characters) + 1 for the backslash
         const chunkSize = 1999 * 2 ;
         const maxChunks = Math.ceil(file.length / chunkSize);
         console.log('maxChunks', maxChunks)

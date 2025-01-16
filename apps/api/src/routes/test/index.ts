@@ -27,13 +27,12 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     const [fileId, dcResponse] = await tgClient.uploadBufferFile({ fileBuffer: fileBuffer });
     request.log.info('Sending response:', dcResponse)
 
-    console.log('File ID:', fileId)
-
     return {
       error: false,
       message: "file uploaded",
       fileId,
       type: "discord",
+      discord: dcResponse
     }
   })
 }

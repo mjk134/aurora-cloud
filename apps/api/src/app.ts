@@ -4,12 +4,18 @@ import AutoLoad, {AutoloadPluginOptions} from '@fastify/autoload';
 import { FastifyPluginAsync, FastifyServerOptions } from 'fastify';
 
 import { Client } from "./handlers/discord/client"
+import { TelegramClient } from "./handlers/telegram/client"
 
 if (!process.env.TOKEN) {
   throw new Error('No token provided')
 }
 
+if (!process.env.TELEGRAM_TOKEN) {
+  throw new Error('No telegram token provided')
+}
+
 const client = new Client(process.env.TOKEN!);
+const tgClient = new TelegramClient(process.env.TELEGRAM_TOKEN!);
 
 export interface AppOptions extends FastifyServerOptions, Partial<AutoloadPluginOptions> {
 
@@ -45,4 +51,4 @@ const app: FastifyPluginAsync<AppOptions> = async (
 };
 
 export default app;
-export { app, options, client }
+export { app, options, client, tgClient }

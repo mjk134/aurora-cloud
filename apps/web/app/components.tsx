@@ -1,21 +1,30 @@
 'use client'
 import { useFormStatus } from "react-dom";
 import { createUpload, downloadFile } from "./actions";
-import { useState, useTransition } from "react";
+import { useActionState, useOptimistic, useState, useTransition } from "react";
+import { UploadResponse } from "@repo/types";
 
 const TestForm = () => {
-    'use client'
-    const { pending } = useFormStatus();
-    const [state, action] = useActionState<{error: boolean}>((state) => {
-      return state;
-    }, { error: false });
+  const [pending, startTransition] = useTransition();
   
     if (pending) {
       return <p>Uploading...</p>;
     }
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+      console.log('submit')
+      e.preventDefault();
+      const data = new FormData(e.currentTarget);
+      startTransition(async () => {
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: data,
+        });
+
+      });
+    }
   
     return (
-      <form action={createUpload}>
+      <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="file">Select File</label>
           <input type="file" id="file" name="file" />

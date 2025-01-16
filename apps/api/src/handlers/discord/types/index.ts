@@ -2,7 +2,7 @@
  * These types are local to the handler, hence they are not located in the shared folder.
  * Used mainly in the client.ts file.  
  */
-import { BinaryLike } from "crypto";
+import type { BinaryLike } from "crypto";
 
 type BlobPart = Blob | BinaryLike;
 

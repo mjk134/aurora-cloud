@@ -1,14 +1,14 @@
-import { Client } from "./client.js";
-
 export class REST {
-    private client: Client;
-    private headers = new Headers();
-    private baseUrl = 'https://discord.com/api/v10';
+    private headers: Headers;
+    private baseUrl: string;
 
-    constructor(client: Client) {
-        this.client = client;
-        this.headers.set('Authorization', `Bot ${this.client.token}`);
-        this.headers.set('User-Agent', 'DiscordBot (https://github.com/mjk134/aurora-cloud, 0.0.1)')
+    constructor({ baseUrl, headers }: { baseUrl: string, headers?: Record<string, string> }) {
+        this.baseUrl = baseUrl;
+        this.headers = new Headers(headers);
+    }
+
+    public addHeader(key: string, value: string) {
+        this.headers.set(key, value);
     }
 
     private async request(method: string, urlLocation: string, options: RequestInit = {}, json?: boolean): Promise<Response> {

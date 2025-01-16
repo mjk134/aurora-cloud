@@ -162,7 +162,7 @@ export default function GradientBackground() {
     }, []);
     return (
         <>
-            <Image alt="gradient background" src="/fallback-gradient.png" layout="fill" objectFit="cover" className="absolute top-0 left-0 -z-20" />
+            <Image alt="gradient background" src="/fallback-gradient.png" fill={true} className="absolute top-0 left-0 -z-20 object-cover" />
             <canvas className="top-0 left-0 -z-10 w-[100vw] h-[100vh] absolute" ref={canvasRef}></canvas>
         </>
     )

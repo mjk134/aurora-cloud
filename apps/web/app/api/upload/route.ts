@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getUserFromSession, getVerfiedSession } from "../../../lib/session";
 import { redirect } from "next/navigation";
 import { UploadResponse } from "@repo/types";
-import { error } from "console";
 
 export async function POST(req: NextRequest, res: NextResponse) {
     // Check if session is valid

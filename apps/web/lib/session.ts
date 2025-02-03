@@ -82,6 +82,7 @@ export async function getUserFromSession(): Promise<Users | null> {
 
   if (!session) return null;
 
+  // select only required fields
   const user = await db.users.findUnique({
     where: {
       user_id: (session as Record<string, any>).userId,

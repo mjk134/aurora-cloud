@@ -1,6 +1,7 @@
 import { REST } from "../rest";
 
 export class YoutubeClient {
+    // @ts-ignore
     private rest: REST;
 
     constructor() {

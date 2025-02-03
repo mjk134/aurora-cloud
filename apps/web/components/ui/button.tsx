@@ -11,14 +11,14 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<ButtonVariant, string> = {
     primary: "bg-[#0891B2] text-white disabled:opacity-60 text-white rounded-md p-2 mt-2",
-    outline: "border border-blue-500 text-blue-500",
-    unselected: "bg-gray-300 text-gray-500",
+    outline: "border border-blue-500 text-blue-500 ",
+    unselected: "text-black rounded-md p-2 mt-2",
 };
 
-const Button = ({ children, variant = "primary", loading = false, fullWidth = false, ...props }: ButtonProps) => {
+const Button = ({ children, variant = "primary", loading = false, fullWidth = false, className = "", ...props }: ButtonProps) => {
     return (
         <button
-            className={cn(`flex items-center justify-center ${fullWidth ? "w-full" : ""} ${variantClasses[variant]}`, props.className)}
+            className={cn(`flex items-center justify-center ${fullWidth ? "w-full" : ""} ${variantClasses[variant]}`, className)}
             disabled={loading}
             {...props}
         >

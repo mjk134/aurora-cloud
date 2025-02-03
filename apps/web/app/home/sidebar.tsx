@@ -2,7 +2,33 @@
 
 import { Users } from "@prisma/client";
 import Button from "../../components/ui/button";
-import { usePathname } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
+import { ChartPie, Cog, DoorOpen, Files, House, UserRoundCog } from "lucide-react";
+import Link from "next/link";
+
+// Declared outside component to avoid re-creating the array on each render
+const routes = [
+    {
+        name: "Dashboard",
+        icon: <House size={24} />,
+        route: "/home",
+    },
+    {
+        name: "All files",
+        icon: <Files size={24} />,
+        route: "/home/files",
+    },
+    {
+        name: "Settings",
+        icon: <Cog size={24} />,
+        route: "/home/settings",
+    },
+    {
+        name: "Analysis",
+        icon: <ChartPie size={24} />,
+        route: "/home/analytics",
+    }
+]
 
 export default function Sidebar( { user, logout } : {
     user: Users;
@@ -15,18 +41,32 @@ export default function Sidebar( { user, logout } : {
             <div className="flex w-full flex-col">
                 <div>Logo</div>
                 <h1 className="font-semibold">Main</h1>
-                <div className="flex w-full flex-col">
-                    <Button>Dashboard</Button>
-                    <Button variant="unselected">All files</Button>
-                    <Button variant="unselected">Settings</Button>
-                    <Button variant="unselected">Analysis</Button>
+                <div className="flex w-full flex-col gap-3 pb-5">
+                    {routes.map((route) => (
+                        <Button
+                            key={route.name}
+                            className="justify-start items-center text-start gap-2 font-medium text-lg leading-4"
+                            variant={pathname === route.route ? "primary" : "unselected"}
+                            onClick={() => redirect(route.route)}
+                        >
+                            {route.icon} {route.name}
+                        </Button>
+                    ))}
                 </div>
                 <h1 className="font-semibold">Recent Folders</h1>
             </div>
-            <div className="flex p-2 justify-between">
+            <div className="flex flex-row p-2 justify-between">
                 <div className="flex gap-2">
                     <div className="w-6 rounded-full h-6 bg-red-600"></div>
                     <p>{user.username}</p>
+                </div>
+                <div className="flex gap-2">
+                    <Button onClick={() => { redirect("/home/settings") }} variant="unselected" className="m-0 p-0">
+                        <UserRoundCog />
+                    </Button>
+                    <Button onClick={() => { logout(); }} variant="unselected" className="m-0 p-0">
+                        <DoorOpen />
+                    </Button>
                 </div>
             </div>
         </div>

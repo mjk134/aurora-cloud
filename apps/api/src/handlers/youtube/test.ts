@@ -124,6 +124,7 @@ async function decode(
   key = KEY
 ): Promise<void> {
   const dataBitsList: number[] = [];
+  // @ts-ignore
   const step = 20;
 
   await new Promise<void>((resolve, reject) => {

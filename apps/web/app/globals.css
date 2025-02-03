@@ -30,3 +30,7 @@ a {
   height: 25px;
 }
 
+.no-pointers {
+  pointer-events: none;
+}
+

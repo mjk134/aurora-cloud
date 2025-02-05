@@ -3,7 +3,7 @@ import { getUserFromSession, getVerfiedSession } from "../../../lib/session";
 import { redirect } from "next/navigation";
 import { UploadResponse } from "@repo/types";
 
-export async function POST(req: Request, res: Response) {
+export async function POST(req: Request) {
     // Check if session is valid
     const user = await getUserFromSession()
     if (!user) {

@@ -4,6 +4,7 @@ import { useActionState, useEffect } from "react";
 import Input from "../ui/input";
 import { FormAction, FormActionResponse } from "../../types";
 import Button from "../ui/button";
+import Link from "next/link";
 
 export default function LoginForm({ serverAction }: {serverAction: FormAction<FormActionResponse | void>}) {
     const [state, action, pending] = useActionState(serverAction, {
@@ -16,9 +17,9 @@ export default function LoginForm({ serverAction }: {serverAction: FormAction<Fo
     })
 
     return (
-        <form action={action} className="flex gap-2 md:w-[35%] flex-col justify-start">
+        <form action={action} className="flex gap-2 md:w-[40%] flex-col justify-start">
         <div className="flex flex-col gap-1">
-            <label className="leading-[18px] text-lg">Username</label>
+            <label className="leading-[18px] text-lg w-full flex justify-between">Username  <Link href="/signup" className="text-sm font-light">No account?</Link></label>
             <Input defaultValue={state ? state.values ? state.values.username : '':''} required name="username" type="text" placeholder="e.g. aurora_cloud" />
             <p className="text-xs text-red-400">{state ? state.error ? state?.location === 'username' ? state.message : null : null : null }</p>
         </div>

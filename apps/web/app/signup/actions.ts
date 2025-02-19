@@ -36,6 +36,8 @@ export async function signUpAction(prevState: any, data: FormData): Promise<Form
         }
     });
 
+    // Validation checks
+
     if (doesUsernameExist) {
         return { error: true, message: "Username is already in use.", location: "username", values: { username, password } };
     }
@@ -65,6 +67,16 @@ export async function signUpAction(prevState: any, data: FormData): Promise<Form
         }
     });
 
+    // Create folder 0
+    await database.folder.create({
+        data: {
+            folder_id: "0",
+            user_id: user.user_id,
+            name: "Root"
+        }
+    });
+
+    // Session created then redirect to home
     await createSession(user.user_id);
 
     redirect("/home")

@@ -3,32 +3,66 @@
 import { Users } from "@prisma/client";
 import Button from "../../components/ui/button";
 import { redirect, usePathname } from "next/navigation";
-import { ChartPie, Cog, DoorOpen, Files, House, UserRoundCog } from "lucide-react";
+import { ChartPie, Cog, DoorOpen, Files, House, Upload, UserRoundCog } from "lucide-react";
 import Link from "next/link";
 
+type Route = {
+    name: string;
+    icon: JSX.Element;
+    route: string;
+    isSlug: boolean;
+}
+
 // Declared outside component to avoid re-creating the array on each render
-const routes = [
+const routes: Route[] = [
     {
         name: "Dashboard",
         icon: <House size={24} />,
         route: "/home",
+        isSlug: false
     },
     {
         name: "All files",
         icon: <Files size={24} />,
         route: "/home/files",
+        isSlug: true,
+    },
+    {
+        name: "Upload",
+        icon: <Upload size={24} />,
+        route: "/home/upload",
+        isSlug: false,
     },
     {
         name: "Settings",
         icon: <Cog size={24} />,
         route: "/home/settings",
+        isSlug: false,
     },
     {
         name: "Analysis",
         icon: <ChartPie size={24} />,
         route: "/home/analytics",
+        isSlug: false,
     }
 ]
+
+function verifyRoute(route: Route, pathname: string): "primary" | "unselected" {
+    if (route.isSlug) {
+        if (pathname.includes(route.route)) {
+            return "primary"
+        } else {
+            return "unselected"
+        }
+    } else {
+        if (pathname === route.route) {
+            return "primary"
+        } else {
+            return "unselected"
+        }
+    }
+
+}
 
 export default function Sidebar( { user, logout } : {
     user: Users;
@@ -46,7 +80,7 @@ export default function Sidebar( { user, logout } : {
                         <Button
                             key={route.name}
                             className="justify-start items-center text-start gap-2 font-medium text-lg leading-4"
-                            variant={pathname === route.route ? "primary" : "unselected"}
+                            variant={verifyRoute(route, pathname)}
                             onClick={() => redirect(route.route)}
                         >
                             {route.icon} {route.name}

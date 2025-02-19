@@ -22,6 +22,7 @@ model Users {
   Session          Session[]
   telegram_storage TelegramStorage[]
   youtube_storage  YouTubeStorage[]
+  parents          Parent[]
 }
 
 model OAuthUsers {
@@ -94,6 +95,7 @@ model File {
 model Folder {
   folder_id String   @id @default(cuid())
   user_id   String
+  name String
   users     Users    @relation(fields: [user_id], references: [user_id])
   parents   Parent[]
 }
@@ -102,6 +104,8 @@ model Parent {
   parent_id String @id @default(cuid())
   folder_id String
   file_id   String
+  user_id   String
+  users     Users  @relation(fields: [user_id], references: [user_id])
   files     File   @relation(fields: [file_id], references: [file_id])
   folders   Folder @relation(fields: [folder_id], references: [folder_id])
 }

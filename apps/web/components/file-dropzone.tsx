@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from "react"
+import { cn } from "../lib/style"
 
-export default function FileDropzone() {
+export default function FileDropzone({ children, className }: { children?: React.ReactNode , className?: string }) {
     const [showInput, setShowInput] = useState(false)
     const [dragging, setDragging] = useState(false)
 
@@ -29,7 +30,7 @@ export default function FileDropzone() {
 
     return (
         <div
-            className={`w-screen h-screen top-0 left-0 absolute ${dragging ? 'pointer-events-auto' : 'pointer-events-none'}`}
+            className={cn("w-full h-full", className)}
             onDragEnter={handleDragEnter}
             onDragOver={(e) => {
                 e.preventDefault()
@@ -38,12 +39,7 @@ export default function FileDropzone() {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
         >
-            {showInput && (
-                <input
-                    type="file"
-                    className="w-full h-full opacity-0 absolute top-0 left-0"
-                />
-            )}
+            {children}
         </div>
     )
 }

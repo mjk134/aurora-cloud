@@ -3,7 +3,7 @@
  * 
  * Either: @class @object
  */
-export interface Handler {
+export interface IHandler {
     downloadFile (): Promise<string>;
     uploadFile (data: Buffer): Promise<Record<string, any>>;
     getAverageWaitTime (): number; // milliseconds

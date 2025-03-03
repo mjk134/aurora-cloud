@@ -24,7 +24,7 @@ const routes: Route[] = [
     {
         name: "All files",
         icon: <Files size={24} />,
-        route: "/home/files",
+        route: "/home/files/0",
         isSlug: true,
     },
     {

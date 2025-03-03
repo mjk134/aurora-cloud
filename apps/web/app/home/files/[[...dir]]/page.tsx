@@ -5,6 +5,7 @@ import FileUpload from "../../../../components/modals/file-upload"
 import { getUserFromSession } from "../../../../lib/session"
 import database from '../../../../lib/database'
 import { FileBox, FolderBox } from "./components"
+import { redirect } from "next/navigation"
 
 // root param means folder id = 0
 export default async function Files({
@@ -14,6 +15,15 @@ export default async function Files({
 }) {
     // Last item in param array is the folder id
     const syncParams = await params;
+
+    // If no folder id, redirect to root folder
+    if (!syncParams.dir) {
+        redirect('/home/files/0')
+    } else if (syncParams.dir.length === 0) {
+        redirect('/home/files/0')
+    }
+
+    // Get the folder id
     const folderId = syncParams.dir[syncParams.dir.length - 1];
 
 
@@ -25,6 +35,12 @@ export default async function Files({
             folder_id: syncParams.dir.length === 1 ? '0' : folderId,
         }
     })
+
+    // If no files or folders in root folder, return empty
+    // if (folderFileIds.length === 0) {
+    //     console.log(folderFileIds)
+    //     redirect('/home/files/0')
+    // }
 
     // Query file table to see what files are in the root folder
     const files = await database.file.findMany({

@@ -1,5 +1,6 @@
 import EventEmitter from "node:events";
-import { IHandler } from "./types";
+import { HandlerTaskDataUnion, QueueItem, QueueItemType } from "./types";
+import { client, tgClient } from "../app";
 
 export default class UserQueueHandler {
     private static instance: UserQueueHandler;
@@ -43,62 +44,93 @@ class QueueHandler {
         });
     }
 
-    public addToQueue(task: HandlerTask): void {
+    public addToQueue(task: Handler): void {
         // iterate over the types and see which type is processing a handler
+    }
+
+    public async processNext(type: QueueItemType): Promise<void> {
+        // get the next item in the queue
+        // if the queue is empty return
+        // process the item
+        // if the item is processed remove it from the queue
+
+        const queue = this.queueChannels.get(type);
+        if (!queue) return;
+       //  if (this.processing.get(type)) return;
     }
 
 
 }
 
-class HandlerTask {
+export class Handler {
     private userId: string;
-    private taskType: HandlerTaskType;
-    private data: HandlerTaskData;
+    private task: HandlerTaskDataUnion;
+    private eventEmitter = new EventEmitter();
 
-    constructor(userId: string, taskType: HandlerTaskType, data: HandlerTaskData) {
+    constructor(userId: string, task: HandlerTaskDataUnion) {
         this.userId = userId;
-        this.taskType = taskType;
-        this.data = data;
+        this.task = task;
     }
 
     public async process(itemType: QueueItemType): Promise<void> {
         // process the task
-        switch (this.taskType) {
+        switch (this.task.type) {
             case 'upload':
-                // await this.uploadFile(this.data.data, itemType);
+                await this.uploadFile(this.task.data, itemType);
                 break;
+            case 'download':
+                await this.downloadFile(itemType);
         }
     }
 
     public async uploadFile(data: Buffer, itemType: QueueItemType): Promise<void> {
         // upload the file
+        // Pass in the event emmiter expect inintialision and finish to be .once events and update chunk to be .on with chunk data progress
+
+        this.eventEmitter.once('initialisation', () => {
+
+        })
+        this.eventEmitter.once('finish', () => {
+            // Deattach emitters
+            this.deattachEvents()
+
+            // Webhook to client
+        })
+        this.eventEmitter.on('chunk', (progress) => {})
+        this.eventEmitter.once('error', () => {
+            this.deattachEvents()
+        })
+
+
         switch (itemType) {
             case 'dc':
                 // upload to discord
+                await client.uploadBufferFile({
+                    fileBuffer: data,
+                    eventEmitter: this.eventEmitter
+                })
+
                 break;
             case 'tg':
+                await tgClient.uploadBufferFile({
+                    fileBuffer: data,
+                    eventEmitter: this.eventEmitter
+                })
+
                 // upload to telegram
                 break;
         }
     }
 
+    public async downloadFile(itemType: QueueItemType): Promise<void> {
 
-}
+    }
 
-type HandlerTaskType = 'download' | 'upload' | 'averageWaitTime' | 'status';
+    private deattachEvents(): void {
+        this.eventEmitter.removeAllListeners('initialisation')
+        this.eventEmitter.removeAllListeners('finish')
+        this.eventEmitter.removeAllListeners('chunk')
+    }
 
 
-type QueueItemType = 'dc' | 'tg' | 'tt' | 'yt' // discord, telegram, tiktok, youtube
-
-type QueueItem = {
-    type: QueueItemType;
-    handler: HandlerTask;
-};
-
-type HandlerTaskData = {
-    type: 'upload',
-    data: Buffer;
-} | {
-    type: 'download',
-    data: null
 }

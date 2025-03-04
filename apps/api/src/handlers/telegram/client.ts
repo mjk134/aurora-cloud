@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { REST } from "../rest";
+import { EventEmitter } from "node:stream";
 
 export class TelegramClient {
     private _token: string;
@@ -39,7 +40,7 @@ export class TelegramClient {
         return ['', null]
     }
 
-    public async uploadBufferFile({ chatId, fileBuffer }: { chatId?: string, fileBuffer: Buffer }): Promise<[string, any]> {
+    public async uploadBufferFile({ chatId, fileBuffer, eventEmitter }: { chatId?: string, fileBuffer: Buffer, eventEmitter: EventEmitter }): Promise<[string, any]> {
         const fileId = randomUUID();
         const chunks = this.chunkFile(fileBuffer);
         const messages = [];

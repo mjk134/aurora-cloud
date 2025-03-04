@@ -3,6 +3,7 @@ import { Attachment, Message, UploadChunkOptions, UploadChunksOptions } from "./
 import fs from 'node:fs/promises'
 import { randomUUID } from 'node:crypto';
 import {DiscordResponse} from '@repo/types'
+import EventEmitter from "node:events";
 
 export class Client {
     private _token: string;
@@ -103,9 +104,11 @@ export class Client {
     /**
      * Main upload function. Recieves a file buffer from client and uploads it to discord.
      */
-    public async uploadBufferFile({ channelId, fileBuffer }: { channelId?: string, fileBuffer: Buffer }): Promise<[string, DiscordResponse]> {
+    public async uploadBufferFile({ channelId, fileBuffer, eventEmitter }: { channelId?: string, fileBuffer: Buffer, eventEmitter: EventEmitter }): Promise<[string, DiscordResponse]> {
         const fileId = randomUUID();
         const chunks = this.chunkFile(fileBuffer);
+        // Initalisation complete
+        eventEmitter.emit('initialisation', fileId)
         const attachments: Attachment[] = [];
         for (let i = 0; i < chunks.length; i++) {
             const chunk = chunks[i];

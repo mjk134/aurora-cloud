@@ -12,10 +12,13 @@ export async function POST(req: Request) {
     }
     // Read form data from client
     const formData = await req.formData()
+    // Don't make this blocking.
     const apiRequest = await fetch('http://localhost:3000/upload', {
         method: 'POST',
         body: formData
     })
+
+
     // Parse response from api
     const apiResponse = await apiRequest.json() as UploadResponse;
     // Do db stuff here using user fetched using session

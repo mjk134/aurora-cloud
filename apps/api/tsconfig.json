@@ -4,6 +4,6 @@
     "outDir": "dist",
     "sourceMap": true,
   },
-  "include": ["src/**/*.ts", "src/app.ts", "src/routes/upload/index.mts"],
+  "include": ["src/**/*.ts", "src/app.ts", "src/routes/upload/index.mts", "src/routes/socket"],
   "exclude": ["node_modules", "dist"]
 }

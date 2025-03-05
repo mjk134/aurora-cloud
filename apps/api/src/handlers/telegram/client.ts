@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { REST } from "../rest";
 import { EventEmitter } from "node:stream";
+import { BlobPart } from "../discord/types";
 
 export class TelegramClient {
     private _token: string;
@@ -30,7 +31,7 @@ export class TelegramClient {
     public async uploadChunk({ chatId, chunkId, fileId, chunkData }: { chatId?: string, chunkId: string, fileId: string, chunkData: Buffer }): Promise<[string, any]> {
         const data = new FormData()
         data.append('chat_id', chatId ?? this.DEFAULT_CHAT_ID)
-        data.append('document', new Blob([chunkData], { type: 'text/plain' }), chunkId);
+        data.append('document', new Blob([chunkData as unknown as BlobPart], { type: 'text/plain' }), chunkId);
         const res = await this.rest.post(
             `/sendDocument`,
             { body: data }

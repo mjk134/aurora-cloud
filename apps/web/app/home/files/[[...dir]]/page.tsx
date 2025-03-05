@@ -68,9 +68,11 @@ export default async function Files({
             <h1 className="text-4xl font-bold">All Files</h1>
             <p className="text-lg">The best place to upload and manage your files.</p>
             <Input placeholder="Search files" />
-            <FileDropzone className="grid grid-cols-4 gap-4 mt-5">
-                <div className="text-lg font-bold">Wowowoo</div>
-                {folders.map((folder) => <FolderBox key={folder.folder_id} folder={folder} />)}
+            <div className="text-lg font-bold mt-3 pb-4">Wowowoo</div>
+            <FileDropzone className="grid grid-cols-5 grid-rows-4 gap-4">
+                {folders
+                .filter((folder) => folder.folder_id !== '0')
+                .map((folder) => <FolderBox key={folder.folder_id} folder={folder} />)}
                 {files.map((file) => <FileBox key={file.file_id} file={file} />)}
             </FileDropzone>
         </div>

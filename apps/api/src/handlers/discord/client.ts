@@ -1,5 +1,5 @@
 import { REST } from "../rest.js";
-import { Attachment, Message, UploadChunkOptions, UploadChunksOptions } from "./types/index.js";
+import { Attachment, BlobPart, Message, UploadChunkOptions, UploadChunksOptions } from "./types/index.js";
 import fs from 'node:fs/promises'
 import { randomUUID } from 'node:crypto';
 import {DiscordResponse} from '@repo/types'
@@ -65,7 +65,7 @@ export class Client {
     }
 
     private chunkFile(file: Buffer): Buffer[] {
-        const chunkSize = 25 * 1024 * 1024;
+        const chunkSize = 10 * 1024 * 1024;
         const maxChunks = Math.ceil(file.length / chunkSize);
         const chunks = [];
         for (let i = 0; i < maxChunks; i++) {
@@ -76,6 +76,10 @@ export class Client {
         return chunks;
     }
 
+
+    /**
+     * Should only be used for testing purposes. This function uploads a file to discord.
+     */
     public async upload({ channelId, filePath }: { channelId: string, filePath: string }): Promise<Message> {
         const file = await fs.readFile(filePath);
         const fileId = randomUUID();
@@ -87,7 +91,7 @@ export class Client {
                 console.log('Failed to read chunk', i, chunk);
                 continue;
             }
-            const attachment = await this.uploadChunk({ channelId, chunkId: randomUUID(), fileId, chunkData: chunk });
+            const attachment = await this.uploadChunk({ channelId, chunkId: randomUUID(), fileId, chunkData: chunk as unknown as BlobPart });
             attachments.push(attachment);
         }
         return {
@@ -110,13 +114,14 @@ export class Client {
         // Initalisation complete
         eventEmitter.emit('initialisation', fileId)
         const attachments: Attachment[] = [];
+        // Loop over chunks
         for (let i = 0; i < chunks.length; i++) {
             const chunk = chunks[i];
             if (!chunk) {
                 console.log('Failed to read chunk', i, chunk);
                 continue;
             }
-            const attachment = await this.uploadChunk({ channelId: channelId ?? this.DEFAULT_CHANNEL, chunkId: randomUUID(), fileId, chunkData: chunk });
+            const attachment = await this.uploadChunk({ channelId: channelId ?? this.DEFAULT_CHANNEL, chunkId: randomUUID(), fileId, chunkData: chunk as unknown as BlobPart });
             attachments.push(attachment);
         }
         return [fileId, {
@@ -177,7 +182,7 @@ export class Client {
                 console.log('Failed to read chunk', i, chunk);
                 continue;
             }
-            const content = await this.uploadChunkAsText({ channelId, chunkId: randomUUID(), fileId, chunkData: chunk });
+            const content = await this.uploadChunkAsText({ channelId, chunkId: randomUUID(), fileId, chunkData: chunk as unknown as BlobPart });
             contents.push(content);
         }
         return {}
@@ -195,7 +200,7 @@ export class Client {
             bufArr.push(Buffer.from(buf))
         }
         // Concat to get the final buffer for the file
-        return Buffer.concat(bufArr);
+        return Buffer.concat(bufArr as any); // TODO: Fix type issue
     }
 
     private async getAttachmentUrl(chunk: Record<string, string>) {

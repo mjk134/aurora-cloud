@@ -1,5 +1,4 @@
 import { FastifyPluginAsync } from "fastify"
-import { tgClient } from "../../app.js" // i love this
 import { UploadResponse } from "@repo/types"
 
 
@@ -24,15 +23,19 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     }
     // Load into queue and reurn response + file id
   
-    const [fileId, dcResponse] = await tgClient.uploadBufferFile({ fileBuffer: fileBuffer });
-    request.log.info('Sending response:', dcResponse)
+    // const [fileId, dcResponse] = await tgClient.uploadBufferFile({ fileBuffer: fileBuffer });
+    // request.log.info('Sending response:', dcResponse)
 
+    // return {
+    //   error: false,
+    //   message: "file uploaded",
+    //   fileId,
+    //   type: "discord",
+    //   discord: dcResponse
+    // }
     return {
-      error: false,
-      message: "file uploaded",
-      fileId,
-      type: "discord",
-      discord: dcResponse
+      error: true,
+      message: "no file"
     }
   })
 }

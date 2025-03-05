@@ -4,7 +4,7 @@
  */
 import type { BinaryLike } from "crypto";
 
-type BlobPart = Blob | BinaryLike;
+export type BlobPart = Blob | BinaryLike;
 
 // Return type from discord?
 export type Message = {

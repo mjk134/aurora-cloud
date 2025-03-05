@@ -6,9 +6,9 @@ import { FileIcon } from "lucide-react"
 export function FileBox({ file }: { file: File }) {
 
     return (
-        <div className="flex justify-center items-center border border-solid border-gray-600 rounded-lg">
-            <FileIcon />
-            {file.file_name}.{file.file_type}
+        <div className="flex flex-col gap-2 justify-center items-center border border-solid border-gray-600 rounded-lg">
+            <FileIcon size={64} />
+            {file.file_name}
         </div>
     )
 }

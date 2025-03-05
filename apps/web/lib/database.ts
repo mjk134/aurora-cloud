@@ -5,7 +5,7 @@ import { PrismaClient } from "@prisma/client";
 const prismaClientSingleton = () => {
   const neon = new Pool({ connectionString: process.env.POSTGRES_PRISMA_URL });
   const adapter = new PrismaNeon(neon);
-  return new PrismaClient({ adapter, log: ['query'] });
+  return new PrismaClient({ adapter,  }); // log: ['query']
 };
 
 declare const globalThis: {

@@ -1,9 +1,6 @@
-import { DiscordResponse } from "./discord";
-
 export * from "./discord";
+export * from "./webhook"
 
-// All possible storage types returned by API based on queue priority
-export type StorageType = "discord" | "telegram" | "youtube" | "x";
 // Type abastraction for easy reading
 export type FileID = string;
 
@@ -11,8 +8,7 @@ export type FileID = string;
 export interface UploadResponse {
     error?: boolean;
     message: string;
-    type?: StorageType;
-    fileId?: FileID;
-    // Lazy but works, TODO: add specific types for each storage type
-    discord?: DiscordResponse;
 }
+
+// All possible storage types returned by API based on queue priority
+export type QueueItemType = 'dc' | 'tg' | 'tt' | 'yt' // discord, telegram, tiktok, youtube

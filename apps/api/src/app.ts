@@ -5,6 +5,7 @@ import { FastifyPluginAsync, FastifyServerOptions } from 'fastify';
 
 import { Client } from "./handlers/discord/client"
 import { TelegramClient } from "./handlers/telegram/client"
+import { REST } from './handlers/rest';
 
 if (!process.env.TOKEN) {
   throw new Error('No token provided')
@@ -16,6 +17,10 @@ if (!process.env.TELEGRAM_TOKEN) {
 
 const client = new Client(process.env.TOKEN!);
 const tgClient = new TelegramClient(process.env.TELEGRAM_TOKEN!);
+const webhookRest = new REST({
+  baseUrl: 'http://localhost:3001/api'
+})
+
 
 export interface AppOptions extends FastifyServerOptions, Partial<AutoloadPluginOptions> {
 
@@ -51,4 +56,4 @@ const app: FastifyPluginAsync<AppOptions> = async (
 };
 
 export default app;
-export { app, options, client, tgClient }
+export { app, options, client, tgClient, webhookRest }

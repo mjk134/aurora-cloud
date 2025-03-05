@@ -1,34 +1,51 @@
+import { QueueItemType } from "@repo/types";
 import { Handler } from "./queues";
 
-interface HandlerTaskData {}
+interface HandlerTask {}
 
-export class UploadTaskData implements HandlerTaskData {
-    public data: Buffer;
-    public type: 'upload' = 'upload';
 
-    constructor(data: Buffer) {
-        this.data = data;
-    }
+export type UploadTaskData = {
+    file: {
+        name: string;
+        type: string;
+        size: number;
+    };
+    buffer: Buffer;
+}
+export interface UploadTask extends HandlerTask {
+    data: UploadTaskData;
+    type: 'upload';
+
 }
 
-export class DownloadTaskData implements HandlerTaskData {
-    public type: 'download' = 'download';
+export interface DownloadTask extends HandlerTask {
+    type: 'download';
 }
 
-export class AvgWaitTimeTaskData implements HandlerTaskData {
-    public type: 'averageWaitTime' = 'averageWaitTime';
+export interface AvgWaitTimeTask extends HandlerTask {
+    type: 'averageWaitTime';
 }
 
-export class StatusTaskData implements HandlerTaskData {
-    public type: 'status' = 'status';
+export interface StatusTask extends HandlerTask {
+    type: 'status';
 }
 
-export type HandlerTaskDataUnion = UploadTaskData | DownloadTaskData | AvgWaitTimeTaskData | StatusTaskData;
+export type HandlerTaskUnion = UploadTask | DownloadTask | AvgWaitTimeTask | StatusTask;
 
-
-export type QueueItemType = 'dc' | 'tg' | 'tt' | 'yt' // discord, telegram, tiktok, youtube
 
 export type QueueItem = {
     type: QueueItemType;
     handler: Handler;
 };
+
+interface QueueItemData {}
+
+export class DiscordDownloadData implements QueueItemData {
+    public type: 'discord' = 'discord';
+    public data: {
+        chunkId: string;
+        messageId: string;
+    }[] = [];
+
+    constructor() {}
+}

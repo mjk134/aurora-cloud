@@ -14,17 +14,17 @@ export default async function Files({
     params: Promise<{ dir: string[] }>,
 }) {
     // Last item in param array is the folder id
-    const syncParams = await params;
+    const asyncParams = await params;
 
     // If no folder id, redirect to root folder
-    if (!syncParams.dir) {
+    if (!asyncParams.dir) {
         redirect('/home/files/0')
-    } else if (syncParams.dir.length === 0) {
+    } else if (asyncParams.dir.length === 0) {
         redirect('/home/files/0')
     }
 
     // Get the folder id
-    const folderId = syncParams.dir[syncParams.dir.length - 1];
+    const folderId = asyncParams.dir[asyncParams.dir.length - 1];
 
 
     // Fetch all files and folders in root folder id: 0
@@ -32,7 +32,7 @@ export default async function Files({
     const folderFileIds = await database.parent.findMany({
         where: {
             user_id: user?.user_id,
-            folder_id: syncParams.dir.length === 1 ? '0' : folderId,
+            folder_id: asyncParams.dir.length === 1 ? '0' : folderId,
         }
     })
 
@@ -69,7 +69,7 @@ export default async function Files({
             <p className="text-lg">The best place to upload and manage your files.</p>
             <Input placeholder="Search files" />
             <div className="text-lg font-bold mt-3 pb-4">Wowowoo</div>
-            <FileDropzone className="grid grid-cols-5 grid-rows-4 gap-4">
+            <FileDropzone className="grid grid-cols-5 grid-rows-auto gap-4">
                 {folders
                 .filter((folder) => folder.folder_id !== '0')
                 .map((folder) => <FolderBox key={folder.folder_id} folder={folder} />)}

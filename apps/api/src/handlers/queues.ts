@@ -1,8 +1,9 @@
-import EventEmitter from "node:events";
+
 import { HandlerTaskUnion,  UploadTaskData } from "./types";
 import { client, tgClient } from "../app";
 import { DiscordWebhookUploadAction, QueueItemType, TelegramWebhookUploadAction } from "@repo/types";
 import { REST } from "./rest";
+import { socketEventEmitter } from "../routes/socket";
 
 /**
  * This class is used to handle the queue for each user.
@@ -72,12 +73,12 @@ export class QueueHandler {
 
         // If the queue lengths are all the same then we can add to any queue, use the most prioritized queue
         if (!queueToUse) {
-            queueToUse = this.types[0];
+            queueToUse = this.types[0]; //TODO: this is tempororay, instead check difference between queue lengths
         }
 
         if (!queueToUse) return;
         const queue = this.queueChannels.get(queueToUse);
-        console.log(queue)
+        console.log(queue) // Debugging
         if (queue) {
             queue.push(task);
             if (!this.processing.get(queueToUse)) {
@@ -95,10 +96,8 @@ export class QueueHandler {
      * - if the item is processed remove it from the queue
      */
     public async processNext(type: QueueItemType): Promise<void> {
-
-
         const queue = this.queueChannels.get(type);
-        console.log('process next', queue)
+        console.log('process next', queue) // Debugging
         if (queue && queue.length > 0) {
             this.processing.set(type, true);
             const task = queue.shift();
@@ -117,7 +116,6 @@ export class QueueHandler {
 export class Handler {
     private userId: string;
     private task: HandlerTaskUnion;
-    private eventEmitter = new EventEmitter();
     private rest: REST;
 
     constructor(userId: string, task: HandlerTaskUnion, rest: REST) {
@@ -136,8 +134,6 @@ export class Handler {
             case 'upload':
                 await this.uploadFile(this.task.data, itemType);
                 break;
-            case 'download':
-                await this.downloadFile(itemType);
         }
     }
 
@@ -165,7 +161,7 @@ export class Handler {
                 // upload to discord
                 const [_, dcResponse] = await client.uploadBufferFile({
                     fileBuffer: data.buffer,
-                    eventEmitter: this.eventEmitter
+                    eventEmitter: socketEventEmitter
                 })
 
                 // Send the webhook
@@ -181,9 +177,9 @@ export class Handler {
                 break;
             case 'tg':
                 // upload to telegram
-                const res = await tgClient.uploadBufferFile({
+                const [__, chunks] = await tgClient.uploadBufferFile({
                     fileBuffer: data.buffer,
-                    eventEmitter: this.eventEmitter
+                    eventEmitter: socketEventEmitter
                 })
 
                 // Send the webhook
@@ -192,7 +188,7 @@ export class Handler {
                         file: data.file,
                         data: {
                             type: 'tg',
-                            chunks: res[1]
+                            chunks: chunks
                         } as TelegramWebhookUploadAction
                     })
                 }, true)
@@ -200,27 +196,27 @@ export class Handler {
         }
     }
 
-    public async downloadFile(itemType: QueueItemType): Promise<void> {
-        // download the file
-        switch (itemType) {
-            case 'dc':
-                // download from discord
-                break;
-            case 'tg':
-                // download from telegram
-                break;
-        }
+    // public async downloadFile(itemType: QueueItemType): Promise<void> {
+    //     // download the file
+    //     switch (itemType) {
+    //         case 'dc':
+    //             // download from discord
+    //             break;
+    //         case 'tg':
+    //             // download from telegram
+    //             break;
+    //     }
         
-    }
+    // }
 
     /**
      * Cleanup method to deattach all the events.
      */
-    private deattachEvents(): void {
-        this.eventEmitter.removeAllListeners('initialisation')
-        this.eventEmitter.removeAllListeners('finish')
-        this.eventEmitter.removeAllListeners('chunk')
-    }
+    // private deattachEvents(): void {
+    //     this.eventEmitter.removeAllListeners('initialisation')
+    //     this.eventEmitter.removeAllListeners('finish')
+    //     this.eventEmitter.removeAllListeners('chunk')
+    // }
 
 
 }

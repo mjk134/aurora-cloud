@@ -1,5 +1,3 @@
-// app/api/ws/route.ts (can be any route file in the app directory)
-
 // Backend websocket route, this next js route will forward all websocket connections to this route and messages will be sent to the client
 export const serverConnection = new WebSocket("ws://localhost:3000/socket");
 
@@ -17,7 +15,7 @@ export function SOCKET(
   
     client.on("message", (message) => {
       console.log("Received message:", message);
-        serverConnection.send(message.toString());
+      serverConnection.send(message.toString());
     });
   
     client.on("close", () => {

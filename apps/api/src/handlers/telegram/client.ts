@@ -7,12 +7,16 @@ export class TelegramClient {
     private _token: string;
     private rest: REST;
     private DEFAULT_CHAT_ID: string = '6361636845';
+    private fileRest: REST
 
 
     constructor(token :string) {
         this._token = token;
         this.rest = new REST({
             baseUrl: `https://api.telegram.org/bot${this._token}`
+        })
+        this.fileRest = new REST({
+            baseUrl: `https://api.telegram.org/file/bot${this._token}`
         })
     }
 
@@ -28,7 +32,7 @@ export class TelegramClient {
         return chunks;
     }
 
-    public async uploadChunk({ chatId, chunkId, fileId, chunkData }: { chatId?: string, chunkId: string, fileId: string, chunkData: Buffer }): Promise<[string, any]> {
+    public async uploadChunk({ chatId, chunkId, fileId, chunkData }: { chatId?: string, chunkId: string, fileId: string, chunkData: Buffer }): Promise<string> {
         const data = new FormData()
         data.append('chat_id', chatId ?? this.DEFAULT_CHAT_ID)
         data.append('document', new Blob([chunkData as unknown as BlobPart], { type: 'text/plain' }), chunkId);
@@ -36,12 +40,21 @@ export class TelegramClient {
             `/sendDocument`,
             { body: data }
         )
-        const msg = await res.json() as Record<string, any>;
-        console.log(JSON.stringify(msg))
-        return ['', null]
+        const msg = await res.json() as {
+            ok: boolean,
+            result: {
+                message_id: number,
+                document: {
+                    file_id: string
+                }
+            }
+        };
+        return msg.result.document.file_id
     }
 
-    public async uploadBufferFile({ chatId, fileBuffer, eventEmitter }: { chatId?: string, fileBuffer: Buffer, eventEmitter: EventEmitter }): Promise<[string, any]> {
+    public async uploadBufferFile({ chatId, fileBuffer, eventEmitter }: { chatId?: string, fileBuffer: Buffer, eventEmitter: EventEmitter }): Promise<[string, {
+        file_id: string
+    }[]]> {
         const fileId = randomUUID();
         const chunks = this.chunkFile(fileBuffer);
         const messages = [];
@@ -54,7 +67,23 @@ export class TelegramClient {
             const document = await this.uploadChunk({ chatId: chatId ?? this.DEFAULT_CHAT_ID, chunkId: randomUUID(), fileId, chunkData: chunk });
             messages.push(document);
         }
-        return [fileId, null]
+        return [fileId, messages.map(m => {
+            return {
+                file_id: m
+            }
+        })]
+    }
+
+    public async donwloadFile({ fileIds }: { fileIds: string[] }): Promise<Buffer> {
+        const chunkArr = [];
+        const files = await Promise.all(fileIds.map(id => this.getFile({ fileId: id })))
+        for (const file of files) {
+            if (file) {
+                const chunk = await this.downloadFileChunk({ filePath: file })
+                chunkArr.push(chunk)
+            }
+        }
+        return Buffer.concat(chunkArr as any) 
     }
 
     public async sendMessage({ chatId = this.DEFAULT_CHAT_ID, text }: { chatId?: string, text: string }): Promise<void> {
@@ -65,6 +94,30 @@ export class TelegramClient {
             })
         }, true)
         console.log('Sent message:', await data.json())
+    }
+
+    public async getFile({ fileId }: { fileId: string }): Promise<string | undefined> {
+        const data = await this.rest.get(`/getFile?file_id=${fileId}`)
+        const fileInfo = await data.json() as {
+            ok: boolean,
+            result: {
+                file_id: string,
+                file_unique_id: string,
+                file_size: number,
+                file_path: string
+            }
+        }
+
+        if (fileInfo.ok) {
+            return fileInfo.result.file_path
+        }
+    }
+
+    public async downloadFileChunk({ filePath }: { filePath: string }): Promise<Buffer> {
+        const res = await this.fileRest.get(`/${filePath}`)
+        console.log('Downloaded file:', res)
+        const arrayBuffer = await res.arrayBuffer()
+        return Buffer.from(arrayBuffer)
     }
 
     public async getMe(): Promise<void> {

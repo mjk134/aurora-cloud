@@ -13,8 +13,7 @@ export interface TelegramWebhookUploadAction extends WebhookUploadAction {
     type: 'tg';
 
     chunks: {
-        url: string;
-        msg_id: string;
+        file_id: string;
     }[];
 }
 

@@ -18,10 +18,6 @@ export interface UploadTask extends HandlerTask {
 
 }
 
-export interface DownloadTask extends HandlerTask {
-    type: 'download';
-}
-
 export interface AvgWaitTimeTask extends HandlerTask {
     type: 'averageWaitTime';
 }
@@ -30,7 +26,7 @@ export interface StatusTask extends HandlerTask {
     type: 'status';
 }
 
-export type HandlerTaskUnion = UploadTask | DownloadTask | AvgWaitTimeTask | StatusTask;
+export type HandlerTaskUnion = UploadTask | AvgWaitTimeTask | StatusTask;
 
 
 export type QueueItem = {
@@ -38,14 +34,3 @@ export type QueueItem = {
     handler: Handler;
 };
 
-interface QueueItemData {}
-
-export class DiscordDownloadData implements QueueItemData {
-    public type: 'discord' = 'discord';
-    public data: {
-        chunkId: string;
-        messageId: string;
-    }[] = [];
-
-    constructor() {}
-}

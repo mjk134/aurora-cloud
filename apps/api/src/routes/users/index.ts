@@ -3,7 +3,19 @@ import { tgClient } from "../../app"
 
 const users: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.get('/', async function (request, reply) {
-    tgClient.sendMessage({ text: 'User endpoint hit' })
+    const path = await tgClient.getFile({ fileId: 'BQACAgQAAxkDAAM3Z8l4s5o1k2DTRVv1sCljeAABD4TuAAIpFgACPitRUhXnnB6qMJQFNgQ' })
+    
+    if (!path) {
+      return 'failed to get file'
+    }
+
+    const buffer = await tgClient.downloadFileChunk({ filePath: path })
+
+    reply.header('Content-Disposition', `filename=something.pdf;`);
+    reply.header('Content-Type', 'application/pdf');
+
+    return buffer
+    
     return 'this is an user endpoint'
   })
 }

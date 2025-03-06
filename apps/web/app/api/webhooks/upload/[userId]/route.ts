@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import database from "../../../../../lib/database";
-import { QueueItemType, WebhookUploadActionUnion } from "@repo/types";
-import { revalidatePath } from "next/cache";
+import { WebhookUploadActionUnion } from "@repo/types";
 
 
 // Tokenate this so that this route cannot be exploited
@@ -43,7 +42,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
         })
     }
 
-
     const dbFile = await database.file.create({
         data: {
             file_name: file.name,
@@ -56,18 +54,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
     await database.parent.create({
         data: {
             file_id: dbFile.file_id,
-            folder_id: '0',
+            folder_id: '0', //TODO: Implement folders
             user_id: user.user_id
         }
     })
-
         
     switch (data.type) {
         case 'dc':
             // Should be typed as discord chunks
-            const chunks = data.chunks;
+            const dcChunks = data.chunks;
 
-            if (!chunks) {
+            if (!dcChunks) {
                 return NextResponse.json({
                     success: false,
                     message: "An error occured while uploading the file.",
@@ -76,7 +73,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
             }
 
             let index = 0;
-            for (const chunk of chunks) {
+            for (const chunk of dcChunks) {
                 await database.discordStorage.create({
                     data: {
                         user_id: user.user_id,
@@ -91,7 +88,28 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
             }
             break;
         case 'tg':
-            // TODO: Add tg impl
+            const tgChunks = data.chunks;
+            if (!tgChunks) {
+                return NextResponse.json({
+                    success: false,
+                    message: "An error occured while uploading the file.",
+                    error: "No chunks found."
+                })
+            }
+
+            let tgIndex = 0;
+            for (const c of tgChunks) {
+                await database.telegramStorage.create({
+                    data: {
+                        user_id: user.user_id,
+                        file_id: dbFile.file_id,
+                        tg_file_id: c.file_id,
+                        chunk_index: tgIndex                   
+                    }
+                })
+                tgIndex++;
+            }
+            
             break;
     }
 

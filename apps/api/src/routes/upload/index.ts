@@ -1,4 +1,4 @@
-import { FastifyPluginAsync, FastifyRequest } from "fastify"
+import { FastifyPluginAsync } from "fastify"
 import { webhookRest } from "../../app.js" // i love this
 import { UploadResponse } from "@repo/types"
 import UserQueueHandler, { Handler, QueueHandler } from "../../handlers/queues.js"
@@ -11,9 +11,7 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     }
   })
 
-  fastify.post('/', async function (request: FastifyRequest<{ Params: {
-    userId: string | undefined
-  } }>, reply) : Promise<UploadResponse> {
+  fastify.post('/', async function (request, reply) : Promise<UploadResponse> {
     const data = await request.file()
     const fileBuffer = await data?.toBuffer()
 
@@ -35,19 +33,19 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       return {
         error: true,
         message: "no file"
-      } // ggwp buffer diff
+      }
     }
-    // Load into queue and reurn response + file id
 
+    // Declare a handle for this upload
     const handler = new Handler(
       userId,
       {
         type: 'upload',
         data: {
           file: {
-            name: data?.filename as string,
-            type: data?.mimetype as string,
-            size: fileBuffer.buffer.byteLength
+            name: data?.filename as string, // Name of file incl. extension
+            type: data?.mimetype as string, // MIME type
+            size: fileBuffer.buffer.byteLength // No. of bytes
           },
           buffer: fileBuffer
         }
@@ -68,6 +66,7 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       }
     }
 
+    // Push the handler to the queue
     queue.addToQueue(handler)
 
     return {

@@ -1,5 +1,6 @@
 import { FastifyPluginAsync } from "fastify"
-import { client } from "../../app.js" // i love this
+import { client, tgClient } from "../../app.js" // i love this
+import { DownloadDataUnion } from "@repo/types";
 
 
 
@@ -7,15 +8,31 @@ const download: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.get('/', async function (request, reply) {
     const { chunks }  = request.query as { chunks: string };
     // Recieving base64 json so must decode first
-    const data = JSON.parse(Buffer.from(chunks, 'base64').toString()) as { file: string, chunks: Record<string, any>[] };
-
-    request.log.info(data.chunks);
+    const data = JSON.parse(Buffer.from(chunks, 'base64').toString()) as DownloadDataUnion;
     // Download the file
-    const buf = await client.downloadFile({ chunks: data.chunks });
+
+    console.log('Data:', data)
+
+    let buf: Buffer | undefined;
+
+    switch (data.type) {
+      case 'dc':
+        // download from discord
+        buf = await client.downloadFile({ chunks: data.chunks });
+        break;
+      case 'tg':
+        // download from telegram
+        buf = await tgClient.donwloadFile({ fileIds: data.chunks.map(c => c.file_id) });
+        break;
+    }
+
+    if (!buf) {
+      throw new Error('Failed to download file');
+    }
 
     request.log.info(`Arr length: ${buf.byteLength}`)
     // REST HTTP file headers
-    reply.header('Content-Disposition', `filename=${data.file};`);
+    reply.header('Content-Disposition', `filename=${data.file_name};`);
     reply.header('Content-Type', 'application/octet-stream');
 
     return buf;

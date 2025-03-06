@@ -57,10 +57,8 @@ model TelegramStorage {
   chunk_id    String   @id @default(cuid())
   user_id     String
   file_id     String
-  chat_id     String
   chunk_index Int
-  message_id  String
-  url         String
+  tg_file_id  String
   created_at  DateTime @default(now())
   files       File     @relation(fields: [file_id], references: [file_id])
   users       Users    @relation(fields: [user_id], references: [user_id])

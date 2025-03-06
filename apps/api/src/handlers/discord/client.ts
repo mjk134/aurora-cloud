@@ -188,13 +188,15 @@ export class Client {
         return {}
     }
 
-    public async downloadFile({ chunks }: { chunks: Record<string, any>[]; }): Promise<Buffer> {
+    public async downloadFile({ chunks }: { chunks: { message_id: string; channel_id: string; }[]; }): Promise<Buffer> {
         const bufArr = [];
-        const messages = await Promise.all(chunks.map(c => this.getAttachmentUrl(c)))
+        const messages = await Promise.all(
+            chunks.map(c => this.getAttachmentUrl(c))
+        )
         // Loop over chunk urls
-        for (let i = 0; i < messages.length; i++) {
+        for (const url of messages) {
             // Extract message id and fetch if no url content available (only do once, if fail do it for the rest)
-            const res = await fetch(messages[i].url);
+            const res = await fetch(url);
             const buf = await res.arrayBuffer();
             // Fetch returns array buffer so we have to convert to a normal buffer (just changing classes, might cause perf issues)
             bufArr.push(Buffer.from(buf))
@@ -203,13 +205,16 @@ export class Client {
         return Buffer.concat(bufArr as any); // TODO: Fix type issue
     }
 
-    private async getAttachmentUrl(chunk: Record<string, string>) {
-        const msgid = chunk.message_id;
-        const channelid = chunk.channel_id;
+    private async getAttachmentUrl(chunk: {
+        message_id: string;
+        channel_id: string;
+    }): Promise<string> {
+        const msg_id = chunk.message_id;
+        const channel_id = chunk.channel_id;
         const msg = await this.rest.get(
-            `/channels/${channelid}/messages/${msgid}`
+            `/channels/${channel_id}/messages/${msg_id}`
             )
         const d = await msg.json()
-        return (d as Record<string, any>).attachments[0].url;
+        return (d as Record<string, any>).attachments[0].url as string;
     }
 }

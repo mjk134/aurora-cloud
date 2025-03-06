@@ -32,8 +32,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ file
             user_id: user.user_id
         },
         include: {
-            discord_storage: true,
-            telegram_storage: true
+            discord_storage: {
+                orderBy: {
+                    chunk_index: 'asc'
+                }
+            },
+            telegram_storage: {
+                orderBy: {
+                    chunk_index: 'asc'
+                }
+            }
         }
     })
 
@@ -51,7 +59,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ file
     if (dbFile.discord_storage) {
         // proccess discord request
         data = {
-            chunks: dbFile.discord_storage.sort((a, b) => a.chunk_index - b.chunk_index).map(chunk => {
+            chunks: dbFile.discord_storage.map(chunk => {
                 return {
                     channel_id: chunk.channel_id,
                     message_id: chunk.message_id

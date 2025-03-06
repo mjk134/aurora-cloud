@@ -71,8 +71,11 @@ export default async function Files({
             <div className="text-lg font-bold mt-3 pb-4">Wowowoo</div>
             <FileDropzone className="grid grid-cols-5 grid-rows-auto gap-4">
                 {folders
-                .filter((folder) => folder.folder_id !== '0')
-                .map((folder) => <FolderBox key={folder.folder_id} folder={folder} />)}
+                    .filter((folder) => folder.folder_id !== '0')
+                    .map((folder) => 
+                        <FolderBox key={folder.folder_id} folder={folder} />
+                    )
+                }
                 {files.map((file) => <FileBox key={file.file_id} file={file} />)}
             </FileDropzone>
         </div>

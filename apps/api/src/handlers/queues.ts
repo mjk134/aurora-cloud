@@ -3,7 +3,7 @@ import { HandlerTaskUnion,  UploadTaskData } from "./types";
 import { client, tgClient } from "../app";
 import { DiscordWebhookUploadAction, QueueItemType, TelegramWebhookUploadAction } from "@repo/types";
 import { REST } from "./rest";
-import { socketEventEmitter } from "../routes/socket";
+import { socketEventEmitter } from "../app";
 
 /**
  * This class is used to handle the queue for each user.
@@ -155,13 +155,13 @@ export class Handler {
         //     this.deattachEvents()
         // })
 
-
         switch (itemType) {
             case 'dc':
                 // upload to discord
                 const [_, dcResponse] = await client.uploadBufferFile({
                     fileBuffer: data.buffer,
-                    eventEmitter: socketEventEmitter
+                    eventEmitter: socketEventEmitter,
+                    userId: this.userId
                 })
 
                 // Send the webhook

@@ -6,6 +6,8 @@ import { getUserFromSession } from "../../../../lib/session"
 import database from '../../../../lib/database'
 import { FileBox, FolderBox } from "./components"
 import { redirect } from "next/navigation"
+import { revalidatePath, revalidateTag } from "next/cache"
+import { revalidateFiles } from "./actions"
 
 // root param means folder id = 0
 export default async function Files({
@@ -29,6 +31,11 @@ export default async function Files({
 
     // Fetch all files and folders in root folder id: 0
     const user = await getUserFromSession()
+
+    if (!user) {
+        redirect('/login')
+    }
+
     const folderFileIds = await database.parent.findMany({
         where: {
             user_id: user?.user_id,
@@ -69,7 +76,7 @@ export default async function Files({
             <p className="text-lg">The best place to upload and manage your files.</p>
             <Input placeholder="Search files" />
             <div className="text-lg font-bold mt-3 pb-4">Wowowoo</div>
-            <FileDropzone className="grid grid-cols-5 grid-rows-auto gap-4">
+            <FileDropzone userId={user?.user_id} revalidatePath={revalidateFiles} className="grid grid-cols-5 grid-rows-auto gap-4">
                 {folders
                     .filter((folder) => folder.folder_id !== '0')
                     .map((folder) => 

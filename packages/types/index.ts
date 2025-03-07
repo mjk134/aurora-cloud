@@ -33,3 +33,26 @@ export interface TelegramDownloadData extends DownloadData {
 }
 
 export type DownloadDataUnion = DiscordDownloadData | TelegramDownloadData;
+
+interface WebsocketEvent {}
+
+export interface WebsocketInitEvent extends WebsocketEvent {
+    event: 'init';
+    fileId: string;
+    chunks: number;
+    user_id: string;
+}
+
+export interface WebsocketChunkEvent extends WebsocketEvent {
+    event: 'chunk';
+    fileId: string;
+    chunk: number;
+    proccessed: boolean;
+}
+
+export interface WebsocketCompleteEvent extends WebsocketEvent {
+    event: 'complete';
+    fileId: string;
+}
+
+export type WebsocketEventUnion = WebsocketInitEvent | WebsocketChunkEvent | WebsocketCompleteEvent;

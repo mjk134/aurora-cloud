@@ -2,7 +2,7 @@ import { REST } from "../rest.js";
 import { Attachment, BlobPart, Message, UploadChunkOptions, UploadChunksOptions } from "./types/index.js";
 import fs from 'node:fs/promises'
 import { randomUUID } from 'node:crypto';
-import {DiscordResponse} from '@repo/types'
+import {DiscordResponse, WebsocketChunkEvent, WebsocketCompleteEvent, WebsocketInitEvent} from '@repo/types'
 import EventEmitter from "node:events";
 
 export class Client {
@@ -108,22 +108,25 @@ export class Client {
     /**
      * Main upload function. Recieves a file buffer from client and uploads it to discord.
      */
-    public async uploadBufferFile({ channelId, fileBuffer, eventEmitter }: { channelId?: string, fileBuffer: Buffer, eventEmitter: EventEmitter }): Promise<[string, DiscordResponse]> {
+    public async uploadBufferFile({ channelId, fileBuffer, eventEmitter, userId }: { channelId?: string, fileBuffer: Buffer, eventEmitter: EventEmitter, userId: string }): Promise<[string, DiscordResponse]> {
         const fileId = randomUUID();
         const chunks = this.chunkFile(fileBuffer);
         // Initalisation complete
-        eventEmitter.emit('initialisation', fileId)
+        eventEmitter.emit('message', JSON.stringify({ event: 'init', fileId, chunks: chunks.length, user_id: userId } as WebsocketInitEvent));
         const attachments: Attachment[] = [];
         // Loop over chunks
         for (let i = 0; i < chunks.length; i++) {
             const chunk = chunks[i];
             if (!chunk) {
                 console.log('Failed to read chunk', i, chunk);
+                eventEmitter.emit('message', JSON.stringify({ event: 'chunk', fileId, chunk: i, proccessed: false, user_id: userId } as WebsocketChunkEvent));
                 continue;
             }
             const attachment = await this.uploadChunk({ channelId: channelId ?? this.DEFAULT_CHANNEL, chunkId: randomUUID(), fileId, chunkData: chunk as unknown as BlobPart });
             attachments.push(attachment);
+            eventEmitter.emit('message', JSON.stringify({ event: 'chunk', fileId, chunk: i, proccessed: true, user_id: userId } as WebsocketChunkEvent));
         }
+        eventEmitter.emit('message', JSON.stringify({ event: 'complete', fileId, user_id: userId } as WebsocketCompleteEvent));
         return [fileId, {
             chunks: attachments.map(a => {
                 return {

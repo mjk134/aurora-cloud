@@ -6,6 +6,8 @@ import { FastifyPluginAsync, FastifyServerOptions } from 'fastify';
 import { Client } from "./handlers/discord/client"
 import { TelegramClient } from "./handlers/telegram/client"
 import { REST } from './handlers/rest';
+import WebSocket from 'ws';
+import { EventEmitter } from 'events';
 
 if (!process.env.TOKEN) {
   throw new Error('No token provided')
@@ -19,6 +21,21 @@ const client = new Client(process.env.TOKEN!);
 const tgClient = new TelegramClient(process.env.TELEGRAM_TOKEN!);
 const webhookRest = new REST({
   baseUrl: 'http://localhost:3001/api'
+})
+
+const clientSocketConnection = new WebSocket("ws://localhost:3001/api/socket");
+const socketEventEmitter = new EventEmitter();
+
+clientSocketConnection.addEventListener("open", () => {
+  clientSocketConnection.send(Buffer.from(JSON.stringify({ server_id: 'server'})).toString('base64'));
+})
+
+clientSocketConnection.addEventListener("error", (error) => {
+  console.log('Error in socket connection', error);
+})
+
+socketEventEmitter.on('message', (message) => {
+  clientSocketConnection.send(message);
 })
 
 
@@ -56,4 +73,4 @@ const app: FastifyPluginAsync<AppOptions> = async (
 };
 
 export default app;
-export { app, options, client, tgClient, webhookRest }
+export { app, options, client, tgClient, webhookRest, socketEventEmitter }

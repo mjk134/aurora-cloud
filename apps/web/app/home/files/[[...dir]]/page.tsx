@@ -79,15 +79,7 @@ export default async function Files({
             <Input placeholder="Search files" />
             <div className="flex relative flex-col h-full w-full overflow-hidden">
                 <div className="text-lg font-bold mt-3 pb-4">Wowowoo</div>
-                <FileDropzone userId={user?.user_id} revalidatePath={revalidateFiles} className="grid grid-cols-5 grid-rows-auto gap-4 overflow-scroll pb-32">
-                    {folders
-                        .filter((folder) => folder.folder_id !== '0')
-                        .map((folder) => 
-                            <FolderBox key={folder.folder_id} folder={folder} />
-                        )
-                    }
-                    {files.map((file) => <FileBox key={file.file_id} file={file} />)}
-                </FileDropzone>
+                <FileDropzone userId={user?.user_id} revalidatePath={revalidateFiles} className="grid grid-cols-5 grid-rows-auto gap-4 overflow-scroll pb-32" files={files} folders={folders.filter((folder) => folder.folder_id !== '0')}/>
                 <Button className="absolute right-5 bottom-0 w-[140px] h-20 font-light text-xl gap-2 px-2"> <Plus />New Item</Button>
             </div>
         </div>

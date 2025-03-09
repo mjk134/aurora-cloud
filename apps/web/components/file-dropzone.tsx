@@ -5,30 +5,18 @@ import { cn } from "../lib/style"
 import { WebsocketEventUnion } from "@repo/types"
 import { usePathname } from "next/navigation"
 import Button from "./ui/button"
+import { File, Folder } from "@prisma/client"
+import { FileBox, FolderBox } from "../app/home/files/[[...dir]]/components"
+import useContextMenu from "../hooks/useContextMenu"
 
-const ContextMenu = ({ position, toggled }: { position: { x: number, y: number }, toggled: boolean }) => {
-    return (
-        <menu className={cn("absolute w-64 pb-2 px-2 border-gray-200 border-[0.5px] border-solid rounded-md bg-white", toggled ? "block" : "hidden")} style={{ top: position.y + 2, left: position.x + 2 }}>
-            <li>
-                <Button variant="unselected" className="border-gray-400 border border-solid w-full items-start justify-start">Create Folder</Button>
-            </li>
-        </menu>
-    )
-}
 
-export default function FileDropzone({ children, className, userId, revalidatePath }: { children?: React.ReactNode, className?: string, userId: string, revalidatePath: (path: string) => Promise<void> }) {
+export default function FileDropzone({ files, folders, className, userId, revalidatePath }: { folders: Folder[], files: File[], className?: string, userId: string, revalidatePath: (path: string) => Promise<void> }) {
     const [showInput, setShowInput] = useState(false);
     const [dragging, setDragging] = useState(false);
-    const [contextMenu, setContextMenu] = useState({
-        position: {
-            x: 0,
-            y: 0
-        },
-        toggled: false
-    });
     const pathname = usePathname();
+    const { clicked, setClicked, points, setPoints } = useContextMenu()
     const [socket, setSocket] = useState<WebSocket | null>(null);
-    const [files, setFiles] = useState<{
+    const [pendingFiles, setFiles] = useState<{
         fileId: string;
         progress: number; // Percentage,
         chunks: number | null;
@@ -98,37 +86,48 @@ export default function FileDropzone({ children, className, userId, revalidatePa
         }
     }
 
-    // context menu handler
-    const handleContextMenu = (e: React.MouseEvent) => {
+    const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault()
-        setContextMenu({
-            position: {
-                x: e.nativeEvent.offsetX,
-                y: e.nativeEvent.offsetY
-            },
-            toggled: true
-        })
     }
+
 
     return (
         <div
             className={cn("w-full h-full relative", className)}
             onDragEnter={handleDragEnter}
-            onDragOver={(e) => {
-                e.preventDefault()
-            }}
+            onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            onContextMenu={handleContextMenu}
-            onMouseDown={() => {
-                setContextMenu({
-                    ...contextMenu,
-                    toggled: false
-                })
-            }}
         >
-            <ContextMenu {...contextMenu} />
-            {children}
+            {folders.map((folder) => 
+                <FolderBox 
+                    key={folder.folder_id} 
+                    folder={folder} 
+
+                />
+            )}
+            {files.map((file) => 
+                <FileBox 
+                    key={file.file_id} 
+                    file={file}                    
+                    onContextMenu={(e) => {
+                        e.preventDefault();
+                        setClicked(true);
+                        setPoints({
+                            x: e.clientX,
+                            y: e.clientY,
+                        });
+                        console.log("Right Click", e.pageX, e.pageY);
+                    }} 
+                />
+            )}
+                 {clicked && (
+                <menu className={cn("absolute w-64 pb-2 px-2 border-gray-200 border-[0.5px] border-solid rounded-md bg-white", clicked ? "block" : "hidden")} style={{ top: points.x + 2, left: points.y + 2 }}>
+                <li>
+                    <Button variant="unselected" className="border-gray-400 border border-solid w-full items-start justify-start">Delete</Button>
+                </li>
+            </menu>
+      )}
         </div>
     )
 }

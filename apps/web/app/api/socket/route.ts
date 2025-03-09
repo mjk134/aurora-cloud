@@ -1,5 +1,5 @@
-import { getUserFromSession } from "../../../lib/session";
 
+// Store the client and user id in a map to keep track of the clients connected to the server
 export const clientUserMap = new Map<string, import("ws").WebSocket>();
 
 // Promisified timeout function for initial message recieved from server

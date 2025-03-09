@@ -8,6 +8,8 @@ import { FileBox, FolderBox } from "./components"
 import { redirect } from "next/navigation"
 import { revalidatePath, revalidateTag } from "next/cache"
 import { revalidateFiles } from "./actions"
+import Button from "../../../../components/ui/button"
+import { Plus } from "lucide-react"
 
 // root param means folder id = 0
 export default async function Files({
@@ -75,16 +77,19 @@ export default async function Files({
             <h1 className="text-4xl font-bold">All Files</h1>
             <p className="text-lg">The best place to upload and manage your files.</p>
             <Input placeholder="Search files" />
-            <div className="text-lg font-bold mt-3 pb-4">Wowowoo</div>
-            <FileDropzone userId={user?.user_id} revalidatePath={revalidateFiles} className="grid grid-cols-5 grid-rows-auto gap-4">
-                {folders
-                    .filter((folder) => folder.folder_id !== '0')
-                    .map((folder) => 
-                        <FolderBox key={folder.folder_id} folder={folder} />
-                    )
-                }
-                {files.map((file) => <FileBox key={file.file_id} file={file} />)}
-            </FileDropzone>
+            <div className="flex relative flex-col h-full w-full overflow-hidden">
+                <div className="text-lg font-bold mt-3 pb-4">Wowowoo</div>
+                <FileDropzone userId={user?.user_id} revalidatePath={revalidateFiles} className="grid grid-cols-5 grid-rows-auto gap-4 overflow-scroll pb-32">
+                    {folders
+                        .filter((folder) => folder.folder_id !== '0')
+                        .map((folder) => 
+                            <FolderBox key={folder.folder_id} folder={folder} />
+                        )
+                    }
+                    {files.map((file) => <FileBox key={file.file_id} file={file} />)}
+                </FileDropzone>
+                <Button className="absolute right-5 bottom-0 w-[140px] h-20 font-light text-xl gap-2 px-2"> <Plus />New Item</Button>
+            </div>
         </div>
     )
 }

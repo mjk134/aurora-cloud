@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getUserFromSession } from "../../../../lib/session"
 
-export async function createFolder(name: string, folderId: string) {
+export async function createFolder(name: string, parentFolderId: string) {
     // Create db entry for folder
     const user = await getUserFromSession();
 }

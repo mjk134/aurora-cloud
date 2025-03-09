@@ -23,7 +23,7 @@ export async function SOCKET(
     const message = await timeout(5000, client);
 
     if (!message) {
-      console.log("No cookies or message received. Closing connection.");
+      console.log("No init message received. Closing connection.");
       return client.close();
     }
 
@@ -46,6 +46,7 @@ export async function SOCKET(
           
         })
 
+        // Mainly for dev but useful cleanup
         client.on("close", () => {
           console.log("The server has disconnected.");
         });
@@ -53,6 +54,8 @@ export async function SOCKET(
     } else if (data.user_id) {
       console.log('User connected:', data.user_id);
       clientUserMap.set(data.user_id, client);
+
+      // Cleanup after user disconnects i.e user leaves the files page
       client.on("close", () => {
         console.log(`A user with id (${data.user_id}) has disconnected.`);
         clientUserMap.delete(data.user_id as string); // Typescript doesn't know that data.user_id is defined here so add type assertion

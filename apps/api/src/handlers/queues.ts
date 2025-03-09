@@ -139,21 +139,6 @@ export class Handler {
 
     public async uploadFile(data: UploadTaskData, itemType: QueueItemType): Promise<void> {
         // upload the file
-        // Pass in the event emmiter expect inintialision and finish to be .once events and update chunk to be .on with chunk data progress
-
-        // this.eventEmitter.once('initialisation', () => {
-
-        // })
-        // this.eventEmitter.once('finish', () => {
-        //     // Deattach emitters
-        //     this.deattachEvents()
-
-        //     // Webhook to client
-        // })
-        // this.eventEmitter.on('chunk', (progress) => {})
-        // this.eventEmitter.once('error', () => {
-        //     this.deattachEvents()
-        // })
 
         switch (itemType) {
             case 'dc':

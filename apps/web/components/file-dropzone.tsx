@@ -4,12 +4,13 @@ import { useEffect, useState } from "react"
 import { cn } from "../lib/style"
 import { WebsocketEventUnion } from "@repo/types"
 import { usePathname } from "next/navigation"
+import Button from "./ui/button"
 
 const ContextMenu = ({ position, toggled }: { position: { x: number, y: number }, toggled: boolean }) => {
     return (
-        <menu className={cn("absolute", toggled ? "block" : "hidden")} style={{ top: position.y + 2, left: position.x + 2 }}>
+        <menu className={cn("absolute w-64 pb-2 px-2 border-gray-200 border-[0.5px] border-solid rounded-md bg-white", toggled ? "block" : "hidden")} style={{ top: position.y + 2, left: position.x + 2 }}>
             <li>
-                <button id="save">Create Folder</button>
+                <Button variant="unselected" className="border-gray-400 border border-solid w-full items-start justify-start">Create Folder</Button>
             </li>
         </menu>
     )
@@ -37,6 +38,7 @@ export default function FileDropzone({ children, className, userId, revalidatePa
     useEffect(() => {
         const websocket = new WebSocket("ws://localhost:3001/api/socket")
         websocket.onopen = () => {
+            console.log('[Client Socket] Connected to websocket server')
             websocket.send(Buffer.from(JSON.stringify({ user_id: userId }), 'utf-8').toString('base64'))
         }
         websocket.onmessage = (message) => {
@@ -49,16 +51,19 @@ export default function FileDropzone({ children, className, userId, revalidatePa
                 case 'chunk':
                     break;
                 case 'complete': 
-                    console.log('Finished uploading file with id:', data.fileId)
+                    console.log('[Client Socket] Finished uploading file with id:', data.fileId)
                     revalidatePath(pathname) // TODO: fix revalidation
                     break;
             }
-
         }
+        websocket.onclose = () => {
+            console.log('[Client Socket] Disconnected from websocket server')
+        }
+
         setSocket(websocket)
         
         return () => {
-            socket?.close()
+            websocket?.close()
         }
     }, [])
 

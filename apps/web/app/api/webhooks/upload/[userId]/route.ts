@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import database from "../../../../../lib/database";
-import { WebhookUploadActionUnion } from "@repo/types";
+import { WebhookUploadActionUnion, WebsocketCompleteEvent } from "@repo/types";
+import { revalidatePath } from "next/cache";
 
 
 // Tokenate this so that this route cannot be exploited
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
     await database.parent.create({
         data: {
             file_id: dbFile.file_id,
-            folder_id: '0', //TODO: Implement folders
+            folder_id: '0', // TODO: Implement folders
             user_id: user.user_id
         }
     })
@@ -109,9 +110,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
                 })
                 tgIndex++;
             }
-            
             break;
     }
+
+
+    // Revalidate path for the specific user
+    revalidatePath('/home/files/0')
 
     return NextResponse.json({
         success: true,

@@ -7,7 +7,7 @@ import database from '../../../../lib/database'
 import { FileBox, FolderBox } from "./components"
 import { redirect } from "next/navigation"
 import { revalidatePath, revalidateTag } from "next/cache"
-import { revalidateFiles } from "./actions"
+import { deleteFile, revalidateFiles } from "./actions"
 import Button from "../../../../components/ui/button"
 import { Plus } from "lucide-react"
 
@@ -79,7 +79,7 @@ export default async function Files({
             <Input placeholder="Search files" />
             <div className="flex relative flex-col h-full w-full overflow-hidden">
                 <div className="text-lg font-bold mt-3 pb-4">Home</div>
-                <FileDropzone userId={user?.user_id} revalidatePath={revalidateFiles} className="grid grid-cols-5 grid-rows-auto gap-4 overflow-scroll pb-32" files={files} folders={folders.filter((folder) => folder.folder_id !== '0')}/>
+                <FileDropzone userId={user?.user_id} deleteFile={deleteFile} className="grid md:grid-cols-3 lg:grid-cols-5 grid-rows-auto gap-4 overflow-scroll pb-32" files={files} folders={folders.filter((folder) => folder.folder_id !== '0')}/>
                 <Button className="absolute right-5 bottom-0 w-[140px] h-20 font-light text-xl gap-2 px-2"> <Plus />New Item</Button>
             </div>
         </div>

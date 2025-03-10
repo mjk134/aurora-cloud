@@ -10,11 +10,10 @@ import { FileBox, FolderBox } from "../app/home/files/[[...dir]]/components"
 import useContextMenu from "../hooks/useContextMenu"
 
 
-export default function FileDropzone({ files, folders, className, userId, revalidatePath }: { folders: Folder[], files: File[], className?: string, userId: string, revalidatePath: (path: string) => Promise<void> }) {
+export default function FileDropzone({ files, folders, className, userId, deleteFile }: { folders: Folder[], files: File[], className?: string, userId: string, deleteFile: (fileId: string, path: string) => Promise<void> }) {
     const [showInput, setShowInput] = useState(false);
     const [dragging, setDragging] = useState(false);
     const pathname = usePathname();
-    const { clicked, setClicked, points, setPoints } = useContextMenu()
     const [socket, setSocket] = useState<WebSocket | null>(null);
     const [pendingFiles, setFiles] = useState<{
         fileId: string;
@@ -40,7 +39,6 @@ export default function FileDropzone({ files, folders, className, userId, revali
                     break;
                 case 'complete': 
                     console.log('[Client Socket] Finished uploading file with id:', data.fileId)
-                    revalidatePath(pathname) // TODO: fix revalidation
                     break;
             }
         }
@@ -109,25 +107,10 @@ export default function FileDropzone({ files, folders, className, userId, revali
             {files.map((file) => 
                 <FileBox 
                     key={file.file_id} 
-                    file={file}                    
-                    onContextMenu={(e) => {
-                        e.preventDefault();
-                        setClicked(true);
-                        setPoints({
-                            x: e.clientX,
-                            y: e.clientY,
-                        });
-                        console.log("Right Click", e.pageX, e.pageY);
-                    }} 
+                    file={file}  
+                    deleteFile={deleteFile}                  
                 />
             )}
-                 {clicked && (
-                <menu className={cn("absolute w-64 pb-2 px-2 border-gray-200 border-[0.5px] border-solid rounded-md bg-white", clicked ? "block" : "hidden")} style={{ top: points.x + 2, left: points.y + 2 }}>
-                <li>
-                    <Button variant="unselected" className="border-gray-400 border border-solid w-full items-start justify-start">Delete</Button>
-                </li>
-            </menu>
-      )}
         </div>
     )
 }

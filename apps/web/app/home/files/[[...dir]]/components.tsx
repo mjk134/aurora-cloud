@@ -28,7 +28,7 @@ export function FileBox({ file, children, ...props }: { file: File, children?: R
     }
 
     return (
-        <div className="flex relative flex-col gap-1 h-[240px] w-[240px] justify-center text-center p-2 items-center border border-solid font-light text-sm border-gray-600 rounded-lg" {...props}>
+        <div className="flex relative flex-col gap-1 h-[200px] w-[200px] md-h-[240px] md-w-[240px] justify-center text-center p-2 items-center border border-solid font-light text-sm border-gray-600 rounded-lg" {...props}>
             {getFileIcon()}
             {file.file_name.length > 150 ? file.file_name.slice(0, 150) + "..." : file.file_name}
         </div>

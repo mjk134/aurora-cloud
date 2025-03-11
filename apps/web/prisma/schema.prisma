@@ -85,7 +85,6 @@ model File {
   created_at       DateTime          @default(now())
   discord_storage  DiscordStorage[]
   users            Users             @relation(fields: [user_id], references: [user_id])
-  parents          Parent[]
   telegram_storage TelegramStorage[]
   youtube_storage  YouTubeStorage[]
 }
@@ -104,6 +103,5 @@ model Parent {
   file_id   String
   user_id   String
   users     Users  @relation(fields: [user_id], references: [user_id])
-  files     File   @relation(fields: [file_id], references: [file_id])
   folders   Folder @relation(fields: [folder_id], references: [folder_id])
 }

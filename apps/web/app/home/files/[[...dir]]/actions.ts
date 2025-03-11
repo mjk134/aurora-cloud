@@ -3,10 +3,31 @@
 import { revalidatePath } from "next/cache";
 import { getUserFromSession } from "../../../../lib/session"
 import database from "../../../../lib/database";
+import { redirect } from "next/navigation";
 
-export async function createFolder(name: string, parentFolderId: string) {
+export async function createFolder(name: string, parentFolderId: string, pathname: string) {
     // Create db entry for folder
     const user = await getUserFromSession();
+    console.log('Creating new folder in path:', pathname, parentFolderId, name)
+
+    if (!user) return;
+
+    const folder = await database.folder.create({
+        data: {
+            name: name,
+            user_id: user?.user_id,
+        }
+    })
+
+    const parent = await database.parent.create({
+        data: {
+            file_id: folder.folder_id, // Treat the folder like a file
+            folder_id: parentFolderId,
+            user_id: user.user_id
+        }
+    })
+
+    redirect(pathname + '/' + folder.folder_id)
 }
 
 export async function revalidateFiles(pathname: string) {             
@@ -31,7 +52,6 @@ export async function deleteFile(fileId: string, pathname: string) {
             user_id: user?.user_id
         },
         include: {
-            parents: true,
             discord_storage: true,
             telegram_storage: true
         }
@@ -43,31 +63,27 @@ export async function deleteFile(fileId: string, pathname: string) {
         // purge discord storage entries
         await database.discordStorage.deleteMany({
             where: {
-                chunk_id: {
-                    in: dbFile.discord_storage.map((storage) => storage.chunk_id)
-                }
+                file_id: fileId,
+                user_id: user.user_id
             }
         })
     } else if (dbFile.telegram_storage) {
         // purge telegram storage entries
         await database.telegramStorage.deleteMany({
             where: {
-                chunk_id: {
-                    in: dbFile.telegram_storage.map((storage) => storage.chunk_id)
-                }
+                file_id: fileId,
+                user_id: user.user_id
             }
         })
     }
 
     // Delete parent entry
-    if (dbFile.parents) {
-        await database.parent.deleteMany({
-            where: {
-                file_id: fileId,
-                user_id: user.user_id,
-            }
-        })
-    }
+    await database.parent.deleteMany({
+        where: {
+            file_id: fileId,
+            user_id: user.user_id,
+        }
+    })
 
     // Delete file entry
     await database.file.delete({

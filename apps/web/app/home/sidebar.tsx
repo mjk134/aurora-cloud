@@ -27,12 +27,12 @@ const routes: Route[] = [
         route: "/home/files/0",
         isSlug: true,
     },
-    {
-        name: "Upload",
-        icon: <Upload size={24} />,
-        route: "/home/upload",
-        isSlug: false,
-    },
+    // {
+    //     name: "Upload",
+    //     icon: <Upload size={24} />,
+    //     route: "/home/upload",
+    //     isSlug: false,
+    // },
     {
         name: "Settings",
         icon: <Cog size={24} />,

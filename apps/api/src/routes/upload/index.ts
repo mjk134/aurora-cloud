@@ -20,7 +20,15 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     let params = new URLSearchParams(request.raw.url?.split('/upload')[1])
 
     const userId = params.get('userId')
+    const folderId = params.get('folderId')
     request.log.info(`User ID is: ${userId}`)
+
+    if (!folderId) {
+      return {
+        error: true,
+        message: "no folder"
+      }
+    }
 
     if (!userId) {
       return {
@@ -47,7 +55,8 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
             type: data?.mimetype as string, // MIME type
             size: fileBuffer.buffer.byteLength // No. of bytes
           },
-          buffer: fileBuffer
+          buffer: fileBuffer,
+          folderId: folderId
         }
       },
       webhookRest

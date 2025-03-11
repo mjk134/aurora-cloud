@@ -101,7 +101,6 @@ export default function FileDropzone({ files, folders, className, userId, delete
                 <FolderBox 
                     key={folder.folder_id} 
                     folder={folder} 
-
                 />
             )}
             {files.map((file) => 

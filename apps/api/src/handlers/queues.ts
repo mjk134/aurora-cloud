@@ -153,6 +153,7 @@ export class Handler {
                 this.rest.post(`/webhooks/upload/${this.userId}`, {
                     body: JSON.stringify({
                         file: data.file,
+                        folderId: data.folderId,
                         data: {
                             type: 'dc',
                             chunks: dcResponse.chunks

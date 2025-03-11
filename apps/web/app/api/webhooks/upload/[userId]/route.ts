@@ -25,6 +25,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
         size: number,
         type: string
     };
+    const folderId = body.folderId as string;
     const data = body.data as WebhookUploadActionUnion;
 
     console.log('Data recieved on webhook: ', body)
@@ -55,7 +56,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
     await database.parent.create({
         data: {
             file_id: dbFile.file_id,
-            folder_id: '0', // TODO: Implement folders
+            folder_id: folderId,
             user_id: user.user_id
         }
     })

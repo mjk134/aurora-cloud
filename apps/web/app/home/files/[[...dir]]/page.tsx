@@ -96,7 +96,7 @@ export default async function Files({
     return (
         <div className="flex relative font-sans flex-col p-5 h-screen w-full">
             <h1 className="text-4xl font-bold">All Files</h1>
-            <p className="text-lg">The best place to upload and manage your files. Drag files in to begin uploading.</p>
+            <p className="text-lg">The best place to upload and manage your files. Drag files in to begin uploading. Right-click files to manage them.</p>
             <Input placeholder="Search files" />
             <div className="flex relative flex-col h-full w-full overflow-hidden">
                 <div className="flex gap-2">
@@ -111,7 +111,7 @@ export default async function Files({
                         })
                     }
                 </div>
-                <FileDropzone userId={user?.user_id} deleteFile={deleteFile} className="grid md:grid-cols-3 lg:grid-cols-5 grid-rows-auto gap-4 overflow-scroll pb-32" files={files} folders={folders.filter((folder) => folder.folder_id !== '0')}/>
+                <FileDropzone currentFolderId={folderId} userId={user?.user_id} deleteFile={deleteFile} className="grid md:grid-cols-3 lg:grid-cols-5 grid-rows-auto gap-4 overflow-scroll pb-32" files={files} folders={folders.filter((folder) => folder.folder_id !== '0')}/>
                 <CreateFolderModal createFolder={createFolder} currentFolderId={folderId}/>
             </div>
         </div>

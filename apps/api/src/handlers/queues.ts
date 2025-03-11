@@ -4,6 +4,7 @@ import { client, tgClient } from "../app";
 import { DiscordWebhookUploadAction, QueueItemType, TelegramWebhookUploadAction } from "@repo/types";
 import { REST } from "./rest";
 import { socketEventEmitter } from "../app";
+import { createCipheriv, randomBytes } from "node:crypto";
 
 /**
  * This class is used to handle the queue for each user.
@@ -140,11 +141,13 @@ export class Handler {
     public async uploadFile(data: UploadTaskData, itemType: QueueItemType): Promise<void> {
         // upload the file
 
+        const encrypted = this.encryptFile(data.buffer);
+
         switch (itemType) {
             case 'dc':
                 // upload to discord
                 const [_, dcResponse] = await client.uploadBufferFile({
-                    fileBuffer: data.buffer,
+                    fileBuffer: encrypted.encryptedFile,
                     eventEmitter: socketEventEmitter,
                     userId: this.userId
                 })
@@ -156,7 +159,12 @@ export class Handler {
                         folderId: data.folderId,
                         data: {
                             type: 'dc',
-                            chunks: dcResponse.chunks
+                            chunks: dcResponse.chunks,
+                            encrypted: {
+                                iv: encrypted.iv,
+                                key: encrypted.key,
+                                authTag: encrypted.tag
+                            }
                         } as DiscordWebhookUploadAction
                     })
                 }, true)
@@ -164,7 +172,7 @@ export class Handler {
             case 'tg':
                 // upload to telegram
                 const [__, chunks] = await tgClient.uploadBufferFile({
-                    fileBuffer: data.buffer,
+                    fileBuffer: encrypted.encryptedFile,
                     eventEmitter: socketEventEmitter
                 })
 
@@ -172,9 +180,15 @@ export class Handler {
                 this.rest.post(`/webhooks/upload/${this.userId}`, {
                     body: JSON.stringify({
                         file: data.file,
+                        folderId: data.folderId,
                         data: {
                             type: 'tg',
-                            chunks: chunks
+                            chunks: chunks,
+                            encrypted: {
+                                iv: encrypted.iv,
+                                key: encrypted.key,
+                                authTag: encrypted.tag
+                            }
                         } as TelegramWebhookUploadAction
                     })
                 }, true)
@@ -182,27 +196,29 @@ export class Handler {
         }
     }
 
-    // public async downloadFile(itemType: QueueItemType): Promise<void> {
-    //     // download the file
-    //     switch (itemType) {
-    //         case 'dc':
-    //             // download from discord
-    //             break;
-    //         case 'tg':
-    //             // download from telegram
-    //             break;
-    //     }
-        
-    // }
-
-    /**
-     * Cleanup method to deattach all the events.
-     */
-    // private deattachEvents(): void {
-    //     this.eventEmitter.removeAllListeners('initialisation')
-    //     this.eventEmitter.removeAllListeners('finish')
-    //     this.eventEmitter.removeAllListeners('chunk')
-    // }
-
+    private encryptFile(file: Buffer): {
+        key: Buffer;
+        encryptedFile: Buffer;
+        iv: Buffer;
+        tag: Buffer;
+    } {
+        const key = randomBytes(24);
+        const uintArr = new Uint8Array(key.buffer, key.byteOffset, key.byteLength)
+        const iv = randomBytes(11)
+        const ivUintArr = new Uint8Array(iv.buffer, iv.byteOffset, iv.byteLength)
+        const cipher = createCipheriv('aes-192-ccm', uintArr, ivUintArr, {
+            authTagLength: 16,
+        });
+        const fileArray = new Uint8Array(file.buffer, file.byteOffset, file.byteLength)
+        const encrypted = cipher.update(fileArray);
+        const tag = cipher.getAuthTag();
+        cipher.final();
+        return {
+            key,
+            encryptedFile: encrypted,
+            iv,
+            tag,
+        }
+    }
 
 }

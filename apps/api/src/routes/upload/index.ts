@@ -21,7 +21,7 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
     const userId = params.get('userId')
     const folderId = params.get('folderId')
-    request.log.info(`User ID is: ${userId}`)
+    request.log.info(`User ID is: ${userId}. Folder ID is: ${folderId}.`)
 
     if (!folderId) {
       return {

@@ -21,7 +21,12 @@ export interface DiscordDownloadData extends DownloadData {
     chunks: {
         channel_id: string;
         message_id: string;
-    }[]
+    }[];
+    encrypted: {
+        iv: Buffer,
+        key: Buffer,
+        authTag: Buffer
+    }
 }
 
 export interface TelegramDownloadData extends DownloadData {
@@ -29,7 +34,12 @@ export interface TelegramDownloadData extends DownloadData {
     file_name: string;
     chunks: {
         file_id: string;
-    }[]
+    }[];
+    encrypted: {
+        iv: Buffer,
+        key: Buffer,
+        authTag: Buffer
+    }
 }
 
 export type DownloadDataUnion = DiscordDownloadData | TelegramDownloadData;

@@ -18,19 +18,12 @@ model Users {
   discord_storage  DiscordStorage[]
   files            File[]
   folders          Folder[]
-  oauth            OAuthUsers?
   Session          Session[]
   telegram_storage TelegramStorage[]
   youtube_storage  YouTubeStorage[]
   parents          Parent[]
 }
 
-model OAuthUsers {
-  user_id        String @id @default(cuid())
-  google_auth_id String
-  x_auth_id      String
-  users          Users  @relation(fields: [user_id], references: [user_id])
-}
 
 model DiscordStorage {
   chunk_id    String   @id @default(cuid())
@@ -82,6 +75,9 @@ model File {
   file_name        String
   file_type        String
   file_size        Int
+  key              Bytes
+  iv               Bytes
+  auth_tag         Bytes
   created_at       DateTime          @default(now())
   discord_storage  DiscordStorage[]
   users            Users             @relation(fields: [user_id], references: [user_id])

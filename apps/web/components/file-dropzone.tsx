@@ -10,7 +10,7 @@ import { FileBox, FolderBox } from "../app/home/files/[[...dir]]/components"
 import useContextMenu from "../hooks/useContextMenu"
 
 
-export default function FileDropzone({ files, folders, className, userId, deleteFile }: { folders: Folder[], files: File[], className?: string, userId: string, deleteFile: (fileId: string, path: string) => Promise<void> }) {
+export default function FileDropzone({ files, folders, className, userId, deleteFile, currentFolderId }: { folders: Folder[], files: File[], className?: string, userId: string, deleteFile: (fileId: string, path: string) => Promise<void>; currentFolderId: string }) {
     const [showInput, setShowInput] = useState(false);
     const [dragging, setDragging] = useState(false);
     const pathname = usePathname();
@@ -76,7 +76,7 @@ export default function FileDropzone({ files, folders, className, userId, delete
         for (const file of files) {
             const formData = new FormData()
             formData.append("file", file)
-            await fetch("/api/upload", {
+            await fetch("/api/upload?folderId=" + currentFolderId, {
                 method: "POST",
                 body: formData
             })

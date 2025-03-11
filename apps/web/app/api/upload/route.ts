@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { UploadResponse } from "@repo/types";
 import database from "../../../lib/database";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     // Check if session is valid
     const user = await getUserFromSession()
     if (!user) {
@@ -14,10 +14,23 @@ export async function POST(req: Request) {
             error: "User not found."
         })
     }
+
+    // Read query params
+    const searchParams = req.nextUrl.searchParams
+    const folderId = searchParams.get('folderId')
+
+    if (!folderId) {
+        return NextResponse.json({
+            success: false,
+            message: "An error occured while uploading the file.",
+            error: "Folder not found."
+        })
+    }
+
     // Read form data from client
     const formData = await req.formData()
     // Don't make this blocking.
-    const apiRequest = await fetch(`http://localhost:3000/upload?userId=${user.user_id}`, {
+    const apiRequest = await fetch(`http://localhost:3000/upload?userId=${user.user_id}&folderId=${folderId}`, {
         method: 'POST',
         body: formData
     })

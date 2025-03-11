@@ -1,7 +1,7 @@
 import { REST } from "../rest.js";
 import { Attachment, BlobPart, Message, UploadChunkOptions, UploadChunksOptions } from "./types/index.js";
 import fs from 'node:fs/promises'
-import { randomUUID } from 'node:crypto';
+import { createCipheriv, randomBytes, randomUUID } from 'node:crypto';
 import {DiscordResponse, WebsocketChunkEvent, WebsocketCompleteEvent, WebsocketInitEvent} from '@repo/types'
 import EventEmitter from "node:events";
 
@@ -75,6 +75,47 @@ export class Client {
         }
         return chunks;
     }
+
+    private encryptChunks(chunks: Buffer[]): {
+        key: Buffer;
+        encryptedChunks: {
+            encrypted: Buffer;
+            iv: Buffer;
+            tag: Buffer;
+        }[];
+    } {
+        const key = randomBytes(24);
+        const uintArr = new Uint8Array(key.buffer, key.byteOffset, key.byteLength)
+        const ivs = chunks.map(() => randomBytes(11))
+        const encryptedChunks = []
+
+        for (let i = 0; i < chunks.length; i++) {
+            const chunk = chunks[i]
+            const iv = ivs[i]
+            const ivUintArr = new Uint8Array(iv.buffer, iv.byteOffset, iv.byteLength)
+            const cipher = createCipheriv('aes-192-ccm', uintArr, ivUintArr, {
+                authTagLength: 16,
+            });
+            const chunkArray = new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength)
+            const encrypted = cipher.update(chunkArray);
+            const tag = cipher.getAuthTag();
+            encryptedChunks.push({
+                encrypted,
+                iv,
+                tag,
+            })
+            cipher.final();
+        }
+
+        return {
+            key,
+            encryptedChunks
+        }
+
+    }
+
+
+
 
 
     /**

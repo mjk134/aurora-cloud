@@ -72,7 +72,7 @@ export async function signUpAction(prevState: any, data: FormData): Promise<Form
         data: {
             folder_id: "0",
             user_id: user.user_id,
-            name: "Root"
+            name: "Home"
         }
     });
 

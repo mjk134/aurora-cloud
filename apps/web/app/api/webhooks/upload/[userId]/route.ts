@@ -27,6 +27,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
     };
     const folderId = body.folderId as string;
     const data = body.data as WebhookUploadActionUnion;
+    const encrypted = data.encrypted as  {
+        iv: Buffer;
+        key: Buffer;
+        authTag: Buffer;
+    };
 
     console.log('Data recieved on webhook: ', body)
 
@@ -44,12 +49,20 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
         })
     }
 
+    console.log(encrypted)
+
+
+    return;
+
     const dbFile = await database.file.create({
         data: {
             file_name: file.name,
             file_size: file.size,
             file_type: file.type,
             user_id: user.user_id,
+            iv: encrypted.iv,
+            key: encrypted.key,
+            auth_tag: encrypted.authTag
         }
     })   
 

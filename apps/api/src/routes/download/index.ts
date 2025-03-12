@@ -1,6 +1,7 @@
 import { FastifyPluginAsync } from "fastify";
 import { client, tgClient } from "../../app.js"; // i love this
 import { DownloadDataUnion } from "@repo/types";
+import { decryptBuffer } from "../../handlers/encryption.js";
 
 const download: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.get("/", async function (request, reply) {
@@ -37,7 +38,13 @@ const download: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     reply.header("Content-Disposition", `filename=${data.file_name};`);
     reply.header("Content-Type", "application/octet-stream");
 
-    return buf;
+    const decrypted = decryptBuffer(
+      buf,
+      new Uint8Array(data.encrypted.key),
+      new Uint8Array(data.encrypted.iv),
+      new Uint8Array(data.encrypted.authTag),
+    );
+    return decrypted;
   });
 };
 

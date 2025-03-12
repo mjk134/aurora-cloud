@@ -70,9 +70,9 @@ export async function GET(
       }),
       file_name: dbFile.file_name,
       encrypted: {
-        key: dbFile.key,
-        iv: dbFile.iv,
-        authTag: dbFile.auth_tag,
+        key: Array.from(dbFile.key),
+        iv: Array.from(dbFile.iv),
+        authTag: Array.from(dbFile.auth_tag),
       },
       type: "dc",
     };
@@ -85,9 +85,9 @@ export async function GET(
         };
       }),
       encrypted: {
-        key: dbFile.key,
-        iv: dbFile.iv,
-        authTag: dbFile.auth_tag,
+        key: Array.from(dbFile.key),
+        iv: Array.from(dbFile.iv),
+        authTag: Array.from(dbFile.auth_tag),
       },
       file_name: dbFile.file_name,
       type: "tg",

@@ -33,3 +33,31 @@ export async function getFolderPath(folderId: string) {
 
   return "/home/files/" + folderIds.reverse().join("/");
 }
+
+export async function getFolderPathPublic(folderId: string, userId: string) {
+  if (folderId === "0") {
+    return "/home/files/0";
+  }
+
+  const folderIds = [folderId];
+  let currentFolderId = folderId;
+
+  while (currentFolderId !== "0") {
+    const parent = await database.parent.findFirst({
+      where: {
+        file_id: currentFolderId,
+        user_id: userId,
+      },
+    });
+
+    if (!parent) {
+      break;
+    }
+
+    folderIds.push(parent?.folder_id);
+    currentFolderId = parent?.folder_id;
+  }
+
+  return "/home/files/" + folderIds.reverse().join("/");
+}
+

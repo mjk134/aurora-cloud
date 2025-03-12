@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import database from "../../../../../lib/database";
 import { WebhookUploadActionUnion, WebsocketCompleteEvent } from "@repo/types";
 import { revalidatePath } from "next/cache";
+import { getFolderPath, getFolderPathPublic } from "../../../../../lib/folder";
 
 // Tokenate this so that this route cannot be exploited
 export async function POST(
@@ -10,7 +11,8 @@ export async function POST(
 ) {
   const { userId } = await params;
   const searchParams = req.nextUrl.searchParams;
-  // // Error handling
+  // Error handling
+
   // const err = searchParams.get('err') as 'true' | 'false' | null;
 
   // if (!err) {
@@ -120,8 +122,12 @@ export async function POST(
       break;
   }
 
+  // get path for folderId
+  const path = await getFolderPathPublic(folderId, userId);
+  console.log('Revalidating path:', path);
+
   // Revalidate path for the specific user
-  revalidatePath("/home/files/0");
+  revalidatePath(path);
 
   return NextResponse.json({
     success: true,

@@ -41,7 +41,7 @@ export async function SOCKET(
     if (data.server_id === "server") {
       console.log("Server connected + authed, ready to receive messages.");
       client.on("message", (message) => {
-        console.log("Received message from client:", message);
+        console.log("Received message from client:", Buffer.from(message.toString()).toString());
         const jsonData = JSON.parse(message.toString());
         const userClient = clientUserMap.get(jsonData.user_id);
         if (userClient) {

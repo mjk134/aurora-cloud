@@ -94,6 +94,7 @@ export function FileBox({
             <ContextMenu.Item asChild>
               <Link
                 href={"/api/download/" + file.file_id}
+                target="_blank"
                 className="group font-sans hover:bg-blue-100 relative flex h-[25px] select-none items-center rounded-[3px] pl-[25px] pr-[5px] text-[14px] leading-none outline-none data-[disabled]:pointer-events-none "
               >
                 Download

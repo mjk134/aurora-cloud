@@ -20,23 +20,6 @@ function normal(x: number): number {
   return x / 255;
 }
 
-function encryptDataAES(data: Buffer, key: string): Buffer {
-  const cipher = crypto.createCipheriv('aes-128-gcm', Buffer.from(key, 'ascii'), crypto.randomBytes(12));
-  const encrypted = Buffer.concat([cipher.update(data), cipher.final()]);
-  const tag = cipher.getAuthTag();
-  return Buffer.concat([cipher.getAuthTag(), tag, encrypted]);
-}
-
-function decryptDataAES(data: Buffer, key: string): Buffer {
-  const iv = data.subarray(0, 12);
-  const tag = data.subarray(12, 28);
-  const ciphertext = data.subarray(28);
-
-  const decipher = crypto.createDecipheriv('aes-128-gcm', Buffer.from(key, 'ascii'), iv);
-  decipher.setAuthTag(tag);
-  return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
-}
-
 async function encode(
   infilePath: string,
   outVideoPath: string,

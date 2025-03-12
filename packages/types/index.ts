@@ -13,7 +13,13 @@ export interface UploadResponse {
 // All possible storage types returned by API based on queue priority
 export type QueueItemType = 'dc' | 'tg' | 'tt' | 'yt' // discord, telegram, tiktok, youtube
 
-interface DownloadData {}
+interface DownloadData {
+    encrypted: {
+        iv: number[];
+        key: number[];
+        authTag: number[];
+    }
+}
 
 export interface DiscordDownloadData extends DownloadData {
     type: 'dc';
@@ -22,11 +28,6 @@ export interface DiscordDownloadData extends DownloadData {
         channel_id: string;
         message_id: string;
     }[];
-    encrypted: {
-        iv: Buffer,
-        key: Buffer,
-        authTag: Buffer
-    }
 }
 
 export interface TelegramDownloadData extends DownloadData {
@@ -35,11 +36,6 @@ export interface TelegramDownloadData extends DownloadData {
     chunks: {
         file_id: string;
     }[];
-    encrypted: {
-        iv: Buffer,
-        key: Buffer,
-        authTag: Buffer
-    }
 }
 
 export type DownloadDataUnion = DiscordDownloadData | TelegramDownloadData;

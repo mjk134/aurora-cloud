@@ -57,6 +57,11 @@ export default function FileDropzone({
         case "init":
           break;
         case "chunk":
+          console.log(
+            "[Client Socket] Received chunk for file with id:",
+            data.fileId,
+            data
+          )
           break;
         case "complete":
           console.log(

@@ -4,11 +4,10 @@ import { League_Spartan } from "next/font/google";
 import type { JSX } from "react";
 
 const league_spartan = League_Spartan({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-league-spartan',
-})
-
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-league-spartan",
+});
 
 export const metadata = {
   title: "Aurora Cloud",
@@ -26,4 +25,3 @@ export default function RootLayout({
     </html>
   );
 }
-

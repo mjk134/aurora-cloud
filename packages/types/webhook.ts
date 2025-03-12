@@ -1,4 +1,10 @@
-interface WebhookUploadAction {}
+interface WebhookUploadAction {
+    encrypted: {
+        iv: ReturnType<typeof Buffer.prototype.toJSON>;
+        key: ReturnType<typeof Buffer.prototype.toJSON>;
+        authTag: ReturnType<typeof Buffer.prototype.toJSON>;
+    }
+}
 
 export interface DiscordWebhookUploadAction extends WebhookUploadAction {
     type: 'dc';
@@ -7,11 +13,7 @@ export interface DiscordWebhookUploadAction extends WebhookUploadAction {
         url: string;
         message_id: string;
     }[];
-    encrypted: {
-        iv: Buffer;
-        key: Buffer;
-        authTag: Buffer;
-    }
+
 }
 
 export interface TelegramWebhookUploadAction extends WebhookUploadAction {
@@ -20,11 +22,6 @@ export interface TelegramWebhookUploadAction extends WebhookUploadAction {
     chunks: {
         file_id: string;
     }[];
-    encrypted: {
-        iv: Buffer;
-        key: Buffer;
-        authTag: Buffer;
-    }
 }
 
 export type WebhookUploadActionUnion = DiscordWebhookUploadAction | TelegramWebhookUploadAction;

@@ -1,4 +1,3 @@
-
 /**
  * Try catch wrapper for async functions
  */

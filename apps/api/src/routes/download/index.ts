@@ -1,42 +1,44 @@
-import { FastifyPluginAsync } from "fastify"
-import { client, tgClient } from "../../app.js" // i love this
+import { FastifyPluginAsync } from "fastify";
+import { client, tgClient } from "../../app.js"; // i love this
 import { DownloadDataUnion } from "@repo/types";
 
-
-
 const download: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
-  fastify.get('/', async function (request, reply) {
-    const { chunks }  = request.query as { chunks: string };
+  fastify.get("/", async function (request, reply) {
+    const { chunks } = request.query as { chunks: string };
     // Recieving base64 json so must decode first
-    const data = JSON.parse(Buffer.from(chunks, 'base64').toString()) as DownloadDataUnion;
+    const data = JSON.parse(
+      Buffer.from(chunks, "base64").toString(),
+    ) as DownloadDataUnion;
     // Download the file
 
-    console.log('Data:', data)
+    console.log("Data:", data);
 
     let buf: Buffer | undefined;
 
     switch (data.type) {
-      case 'dc':
+      case "dc":
         // download from discord
         buf = await client.downloadFile({ chunks: data.chunks });
         break;
-      case 'tg':
+      case "tg":
         // download from telegram
-        buf = await tgClient.donwloadFile({ fileIds: data.chunks.map(c => c.file_id) });
+        buf = await tgClient.donwloadFile({
+          fileIds: data.chunks.map((c) => c.file_id),
+        });
         break;
     }
 
     if (!buf) {
-      throw new Error('Failed to download file');
+      throw new Error("Failed to download file");
     }
 
-    request.log.info(`Arr length: ${buf.byteLength}`)
+    request.log.info(`Arr length: ${buf.byteLength}`);
     // REST HTTP file headers
-    reply.header('Content-Disposition', `filename=${data.file_name};`);
-    reply.header('Content-Type', 'application/octet-stream');
+    reply.header("Content-Disposition", `filename=${data.file_name};`);
+    reply.header("Content-Type", "application/octet-stream");
 
     return buf;
-  })
-}
+  });
+};
 
 export default download;

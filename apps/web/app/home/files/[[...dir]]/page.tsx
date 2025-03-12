@@ -1,17 +1,16 @@
 import { cookies } from "next/headers";
 import Input from "../../../../components/ui/input";
 import FileDropzone from "../../../../components/file-dropzone";
-import FileUpload from "../../../../components/modals/file-upload";
 import { getUserFromSession } from "../../../../lib/session";
 import database from "../../../../lib/database";
-import { CreateFolderModal, FileBox, FolderBox } from "./components";
 import { redirect } from "next/navigation";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { createFolder, deleteFile, revalidateFiles } from "./actions";
+import { createFolder, deleteFile } from "./actions";
 import Button from "../../../../components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import path from "path";
+import { CreateFolderModal } from "../../../../components/modals/create-folder";
 
 // root param means folder id = 0
 export default async function Files({
@@ -50,7 +49,7 @@ export default async function Files({
     },
   });
 
-  // If no files or folders in root folder, return empty
+  // TODO: If no files or folders in root folder, show empty state
   // if (folderFileIds.length === 0) {
   //     console.log(folderFileIds)
   //     redirect('/home/files/0')

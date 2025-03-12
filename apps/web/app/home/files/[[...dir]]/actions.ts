@@ -34,12 +34,6 @@ export async function createFolder(
   redirect(pathname + "/" + folder.folder_id);
 }
 
-export async function revalidateFiles(pathname: string) {
-  revalidatePath("/home/files", "page");
-  revalidatePath(pathname);
-  // redirect(pathname)
-}
-
 /**
  * Delete a file from the database and storage.
  * @param file The file to delete
@@ -98,4 +92,8 @@ export async function deleteFile(fileId: string, pathname: string) {
   });
 
   revalidatePath(pathname); // revalidate folder path
+}
+
+export async function deleteFolder(folderId: string, pathname: string) {
+  
 }

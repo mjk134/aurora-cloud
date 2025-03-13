@@ -11,6 +11,7 @@ export type UploadTaskData = {
   };
   buffer: Buffer;
   folderId: string;
+  tempFileId: string;
 };
 export interface UploadTask extends HandlerTask {
   data: UploadTaskData;

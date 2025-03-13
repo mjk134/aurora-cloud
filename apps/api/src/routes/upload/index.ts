@@ -21,6 +21,7 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
     const userId = params.get('userId')
     const folderId = params.get('folderId')
+    const tempFileId = params.get('tempFileId')
     request.log.info(`User ID is: ${userId}. Folder ID is: ${folderId}.`)
 
     if (!folderId) {
@@ -56,7 +57,8 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
             size: fileBuffer.buffer.byteLength // No. of bytes
           },
           buffer: fileBuffer,
-          folderId: folderId
+          folderId: folderId,
+          tempFileId: tempFileId ? tempFileId : "none" // If no tempFileId, set to none
         }
       },
       webhookRest

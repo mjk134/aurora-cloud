@@ -11,10 +11,10 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "bg-[#0891B2] text-white disabled:opacity-60 text-white rounded-md p-2 mt-2",
+    "bg-[#0891B2] text-white disabled:opacity-60 rounded-md p-2 mt-2",
   outline: "border border-blue-500 text-blue-500 ",
   unselected: "text-black rounded-md p-2 mt-2",
-  danger: "bg-red-500 text-white rounded-md p-2 mt-2",
+  danger: "bg-red-500 text-white rounded-md p-2 px-3 mt-2 disabled:opacity-60",
 };
 
 const Button = ({

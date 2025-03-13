@@ -18,12 +18,14 @@ interface DownloadData {
         iv: number[];
         key: number[];
         authTag: number[];
-    }
+    };
+    user_id: string;
+    file_name: string;
+    file_id: string;
 }
 
 export interface DiscordDownloadData extends DownloadData {
     type: 'dc';
-    file_name: string;
     chunks: {
         channel_id: string;
         message_id: string;
@@ -32,7 +34,7 @@ export interface DiscordDownloadData extends DownloadData {
 
 export interface TelegramDownloadData extends DownloadData {
     type: 'tg';
-    file_name: string;
+    
     chunks: {
         file_id: string;
     }[];
@@ -47,12 +49,15 @@ export interface WebsocketInitEvent extends WebsocketEvent {
     fileId: string;
     chunks: number;
     user_id: string;
+    type?: 'downloading' | 'uploading';
+    file_name?: string;
 }
 
 export interface WebsocketChunkEvent extends WebsocketEvent {
     event: 'chunk';
     fileId: string;
     chunk: number;
+    progress: number;
     proccessed: boolean;
 }
 

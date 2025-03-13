@@ -151,11 +151,13 @@ export class Client {
     fileBuffer,
     eventEmitter,
     userId,
+    tempFileId,
   }: {
     channelId?: string;
     fileBuffer: Buffer;
     eventEmitter: EventEmitter;
     userId: string;
+    tempFileId: string;
   }): Promise<[string, DiscordResponse]> {
     const fileId = randomUUID();
     const chunks = this.chunkFile(fileBuffer);
@@ -164,7 +166,7 @@ export class Client {
       "message",
       JSON.stringify({
         event: "init",
-        fileId,
+        fileId: tempFileId,
         chunks: chunks.length,
         user_id: userId,
       } as WebsocketInitEvent),
@@ -179,10 +181,11 @@ export class Client {
           "message",
           JSON.stringify({
             event: "chunk",
-            fileId,
+            fileId: tempFileId,
             chunk: i,
             proccessed: false,
             user_id: userId,
+            progress: (i + 1) / chunks.length,
           } as WebsocketChunkEvent),
         );
         continue;
@@ -198,8 +201,9 @@ export class Client {
         "message",
         JSON.stringify({
           event: "chunk",
-          fileId,
+          fileId: tempFileId,
           chunk: i,
+          progress: (i + 1) / chunks.length,
           proccessed: true,
           user_id: userId,
         } as WebsocketChunkEvent),
@@ -209,7 +213,7 @@ export class Client {
       "message",
       JSON.stringify({
         event: "complete",
-        fileId,
+        fileId: tempFileId,
         user_id: userId,
       } as WebsocketCompleteEvent),
     );
@@ -297,23 +301,54 @@ export class Client {
 
   public async downloadFile({
     chunks,
+    eventEmitter,
+    userId,
+    fileId,
+    filename,
   }: {
     chunks: { message_id: string; channel_id: string }[];
+    eventEmitter: EventEmitter;
+    userId: string;
+    fileId: string;
+    filename: string;
   }): Promise<Buffer> {
     const bufArr = [];
+    eventEmitter.emit(
+      "message",
+      JSON.stringify({
+        event: "init",
+        fileId: fileId,
+        chunks: chunks.length,
+        user_id: userId,
+        file_name: filename,
+        type: "downloading",
+      } as WebsocketInitEvent),
+    );
     const messages = await Promise.all(
       chunks.map((c) => this.getAttachmentUrl(c)),
     );
     // Loop over chunk urls
-    for (const url of messages) {
+    for (let i = 0; i < messages.length; i++) {
+      const url = messages[i];
       // Extract message id and fetch if no url content available (only do once, if fail do it for the rest)
       const res = await fetch(url);
       const buf = await res.arrayBuffer();
       // Fetch returns array buffer so we have to convert to a normal buffer (just changing classes, might cause perf issues)
       bufArr.push(new Uint8Array(buf));
+      eventEmitter.emit(
+        "message",
+        JSON.stringify({
+          event: "chunk",
+          fileId: fileId,
+          chunk: i,
+          progress: (i + 1) / chunks.length,
+          proccessed: true,
+          user_id: userId,
+        } as WebsocketChunkEvent),
+      );
     }
     // Concat to get the final buffer for the file
-    return Buffer.concat(bufArr); // TODO: Fix type issue
+    return Buffer.concat(bufArr);
   }
 
   private async getAttachmentUrl(chunk: {

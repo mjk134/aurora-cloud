@@ -1,6 +1,4 @@
 # TODO FOR COMPUTING PROJECT
-- IN PROGRESS: socket download client interface (show toast)
-- IN PROGRESS: socket upload client interface (show toast)
 - Add search function using query (search params)
 - draggable files and folders
 - tokenate webhook upload route?
@@ -15,8 +13,10 @@
   - show some analysis
 - Fix sidebar to show selection of files directory
 
+### UPGRADE TO TAILWIND CSS V4
+-  fix migrate cli tool errors
 
-ENCRYPTION TASK DETAILS
+## ENCRYPTION TASK DETAILS
 - Add info on encryption with reference to NIST in document
 - 2 ** (8 * (15 - 11)) where N >= 7 AND N <= 13, 11 is used since it covers all chunk sizes
 - IF ADDING VIDEO DATA THEN USE N = 7 FOR EXPONENTIALLY GREATER CIPHER SIZE

@@ -160,6 +160,7 @@ export class Handler {
           fileBuffer: encrypted.buf,
           eventEmitter: socketEventEmitter,
           userId: this.userId,
+          tempFileId: data.tempFileId,
         });
 
         // Send the webhook
@@ -188,6 +189,8 @@ export class Handler {
         const [__, chunks] = await tgClient.uploadBufferFile({
           fileBuffer: encrypted.buf,
           eventEmitter: socketEventEmitter,
+          userId: this.userId,
+          tempFileId: data.tempFileId,
         });
 
         // Send the webhook

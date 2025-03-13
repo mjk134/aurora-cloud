@@ -2,6 +2,11 @@ import { randomUUID } from "node:crypto";
 import { REST } from "../rest";
 import { EventEmitter } from "node:stream";
 import { BlobPart } from "../discord/types";
+import {
+  WebsocketChunkEvent,
+  WebsocketCompleteEvent,
+  WebsocketInitEvent,
+} from "@repo/types";
 
 export class TelegramClient {
   private _token: string;
@@ -66,10 +71,14 @@ export class TelegramClient {
     chatId,
     fileBuffer,
     eventEmitter,
+    tempFileId,
+    userId,
   }: {
     chatId?: string;
     fileBuffer: Buffer;
     eventEmitter: EventEmitter;
+    tempFileId: string;
+    userId: string;
   }): Promise<
     [
       string,
@@ -80,11 +89,31 @@ export class TelegramClient {
   > {
     const fileId = randomUUID();
     const chunks = this.chunkFile(fileBuffer);
+    eventEmitter.emit(
+      "message",
+      JSON.stringify({
+        event: "init",
+        fileId: tempFileId,
+        chunks: chunks.length,
+        user_id: userId,
+      } as WebsocketInitEvent),
+    );
     const messages = [];
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
       if (!chunk) {
         console.log("Failed to read chunk", i, chunk);
+        eventEmitter.emit(
+          "message",
+          JSON.stringify({
+            event: "chunk",
+            fileId: tempFileId,
+            chunk: i + 1,
+            proccessed: false,
+            user_id: userId,
+            progress: i / chunks.length,
+          } as WebsocketChunkEvent),
+        );
         continue;
       }
       const document = await this.uploadChunk({
@@ -94,7 +123,26 @@ export class TelegramClient {
         chunkData: chunk,
       });
       messages.push(document);
+      eventEmitter.emit(
+        "message",
+        JSON.stringify({
+          event: "chunk",
+          fileId: tempFileId,
+          chunk: i,
+          progress: (i + 1) / chunks.length,
+          proccessed: true,
+          user_id: userId,
+        } as WebsocketChunkEvent),
+      );
     }
+    eventEmitter.emit(
+      "message",
+      JSON.stringify({
+        event: "complete",
+        fileId: tempFileId,
+        user_id: userId,
+      } as WebsocketCompleteEvent),
+    );
     return [
       fileId,
       messages.map((m) => {
@@ -105,19 +153,50 @@ export class TelegramClient {
     ];
   }
 
-  public async donwloadFile({
+  public async downloadFile({
     fileIds,
+    eventEmitter,
+    userId,
+    fileId,
+    filename,
   }: {
     fileIds: string[];
+    eventEmitter: EventEmitter;
+    userId: string;
+    fileId: string;
+    filename: string;
   }): Promise<Buffer> {
     const chunkArr = [];
+    eventEmitter.emit(
+      "message",
+      JSON.stringify({
+        event: "init",
+        fileId: fileId,
+        chunks: fileIds.length,
+        user_id: userId,
+        file_name: filename,
+        type: "downloading",
+      } as WebsocketInitEvent),
+    );
     const files = await Promise.all(
       fileIds.map((id) => this.getFile({ fileId: id })),
     );
-    for (const file of files) {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
       if (file) {
         const chunk = await this.downloadFileChunk({ filePath: file });
         chunkArr.push(new Uint8Array(chunk));
+        eventEmitter.emit(
+          "message",
+          JSON.stringify({
+            event: "chunk",
+            fileId: fileId,
+            chunk: i,
+            progress: (i + 1) / fileIds.length,
+            proccessed: true,
+            user_id: userId,
+          } as WebsocketChunkEvent),
+        );
       }
     }
     return Buffer.concat(chunkArr);

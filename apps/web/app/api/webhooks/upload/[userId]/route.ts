@@ -121,14 +121,7 @@ export async function POST(
       }
       break;
   }
-
-  // get path for folderId
-  const path = await getFolderPathPublic(folderId, userId);
-  console.log('Revalidating path:', path);
-
-  // Revalidate path for the specific user
-  revalidatePath(path);
-
+  
   return NextResponse.json({
     success: true,
     message: "File uploaded.",

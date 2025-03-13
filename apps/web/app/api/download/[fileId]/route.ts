@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromSession } from "../../../../lib/session";
 import database from "../../../../lib/database";
-import { DiscordDownloadData, DownloadDataUnion } from "@repo/types";
+import { DownloadDataUnion } from "@repo/types";
 
 export async function GET(
   req: NextRequest,
@@ -74,6 +74,8 @@ export async function GET(
         iv: Array.from(dbFile.iv),
         authTag: Array.from(dbFile.auth_tag),
       },
+      user_id: user.user_id,
+      file_id: dbFile.file_id,
       type: "dc",
     };
   } else if (dbFile.telegram_storage) {
@@ -90,6 +92,8 @@ export async function GET(
         authTag: Array.from(dbFile.auth_tag),
       },
       file_name: dbFile.file_name,
+      user_id: user.user_id,
+      file_id: dbFile.file_id,
       type: "tg",
     };
   }
@@ -108,7 +112,7 @@ export async function GET(
   const headers = new Headers(res.headers);
   headers.set("Content-Disposition", `filename=${dbFile.file_name};`);
 
-  // this is just to display the file in the browser
+  // this is just to display the file in the browser, perhaps for user avatar
   // headers.set('Content-Type', dbFile.file_type);
 
   return new NextResponse(blob, { status: 200, statusText: "OK", headers });

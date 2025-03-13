@@ -39,6 +39,19 @@ export function FileBox({
     }
   }, [file.file_type]);
 
+  const handleDownload = useCallback(async () => {
+    const res = await fetch("/api/download/" + file.file_id);
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(new Blob([blob]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = file.file_name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }, []);
+
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger asChild>
@@ -80,13 +93,17 @@ export function FileBox({
               Delete{" "}
             </ContextMenu.Item>
             <ContextMenu.Item asChild>
-              <Link
-                href={"/api/download/" + file.file_id}
-                target="_blank"
-                className="group font-sans hover:bg-blue-100 relative flex h-[25px] select-none items-center rounded-[3px] pl-[25px] pr-[5px] text-[14px] leading-none outline-none data-[disabled]:pointer-events-none "
+              <button
+                disabled={isPending}
+                onClick={() => {
+                  startTransition(async () => {
+                    await handleDownload();
+                  });
+                }}
+                className="group w-full font-sans hover:bg-blue-100 relative flex h-[25px] select-none items-center rounded-[3px] pl-[25px] pr-[5px] text-[14px] leading-none outline-none data-[disabled]:pointer-events-none "
               >
                 Download
-              </Link>
+              </button>
             </ContextMenu.Item>
           </motion.div>
         </ContextMenu.Content>
@@ -102,81 +119,90 @@ export function FolderBox({ folder }: { folder: Folder }) {
   const [pending, setTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
   const [folderFileCount, setFolderFileCount] = useState([0, 0]);
-  
-    useEffect(() => {
-      if (isOpen) {
-        setContextMenuOpen(false);
-        setTransition(async () => {
-          const count = await getSubFilesCount(folder.folder_id);
-          setFolderFileCount(count);
-        });
-      }
-  
-    }, [folder, isOpen, setContextMenuOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setContextMenuOpen(false);
+      setTransition(async () => {
+        const count = await getSubFilesCount(folder.folder_id);
+        setFolderFileCount(count);
+      });
+    }
+  }, [folder, isOpen, setContextMenuOpen]);
 
   return (
     <AlertDialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <ContextMenu.Root onOpenChange={setContextMenuOpen}>
-      <ContextMenu.Trigger asChild>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          onClick={() => router.push(`${pathname}/${folder.folder_id}`)}
-          className="flex relative hover:cursor-pointer flex-col h-[150px] w-[150px] md:h-[200px] md:w-[200px] lg:h-[240px] lg:w-[240px] justify-center text-center p-2 items-center border border-solid font-light text-sm border-gray-600 rounded-lg"
-        >
-          <FolderIcon size={80} strokeWidth={1} />
-          {folder.name}
-        </motion.div>
-      </ContextMenu.Trigger>
-      <ContextMenu.Portal>
-        <ContextMenu.Content asChild>
+        <ContextMenu.Trigger asChild>
           <motion.div
-            animate={{ scale: 1 }}
-            initial={{ scale: 0.5 }}
-            className="min-w-[220px] overflow-hidden rounded-md bg-white p-[5px] shadow-[0px_10px_38px_-10px_rgba(22,_23,_24,_0.35),_0px_10px_20px_-15px_rgba(22,_23,_24,_0.2)]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            onClick={() => router.push(`${pathname}/${folder.folder_id}`)}
+            className="flex relative hover:cursor-pointer flex-col h-[150px] w-[150px] md:h-[200px] md:w-[200px] lg:h-[240px] lg:w-[240px] justify-center text-center p-2 items-center border border-solid font-light text-sm border-gray-600 rounded-lg"
           >
-            <ContextMenu.Item asChild className="group font-sans hover:bg-red-100 relative flex h-[25px] select-none items-center rounded-[3px] pl-[25px] pr-[5px] text-[14px] leading-none outline-none data-[disabled]:pointer-events-none ">
-              <AlertDialog.Trigger asChild>
-                <div onClick={() => {
-                  console.log("Delete folder");
-                  setIsOpen(true);
-                }} className="group font-sans hover:bg-red-100 relative flex h-[25px] select-none items-center rounded-[3px] pl-[25px] pr-[5px] text-[14px] leading-none outline-none data-[disabled]:pointer-events-none ">
-                  Delete{" "}
-                </div>
-              </AlertDialog.Trigger>
-             </ContextMenu.Item>
+            <FolderIcon size={80} strokeWidth={1} />
+            {folder.name}
           </motion.div>
-        </ContextMenu.Content>
-      </ContextMenu.Portal>
-    </ContextMenu.Root>
-		<AlertDialog.Portal>
-			<AlertDialog.Overlay className="fixed inset-0 bg-gray backdrop-blur-sm data-[state=open]:animate-overlayShow" />
-			<AlertDialog.Content className="fixed border border-solid border-gray-100 font-sans left-1/2 top-1/2 max-h-[85vh] w-[90vw] max-w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-md bg-white p-[25px] shadow-[var(--shadow-6)] focus:outline-none data-[state=open]:animate-contentShow">
-				<AlertDialog.Title className="m-0 text-[17px] font-medium text-mauve12">
-					Are you sure you want to delete this folder?
-				</AlertDialog.Title>
-				<AlertDialog.Description className="mb-5 mt-[15px] text-[15px] leading-normal text-mauve11">
-					This action cannot be undone. This will permanently delete {folderFileCount[0]} file(s) and {folderFileCount[1]} folder(s).
-				</AlertDialog.Description>
-				<div className="flex justify-end gap-[25px]">
-					<AlertDialog.Cancel asChild>
-						<Button disabled={pending} variant="unselected">
-							Cancel
-						</Button>
-					</AlertDialog.Cancel>
-					<AlertDialog.Action asChild>
-						<Button onClick={() => {
-              setTransition(() => {
-                deleteFolder(folder.folder_id, pathname);
-              });
-            }} loading={pending} variant="danger">
-            Delete folder
-						</Button>
-					</AlertDialog.Action>
-				</div>
-			</AlertDialog.Content>
-		</AlertDialog.Portal>
-	</AlertDialog.Root>
-
+        </ContextMenu.Trigger>
+        <ContextMenu.Portal>
+          <ContextMenu.Content asChild>
+            <motion.div
+              animate={{ scale: 1 }}
+              initial={{ scale: 0.5 }}
+              className="min-w-[220px] overflow-hidden rounded-md bg-white p-[5px] shadow-[0px_10px_38px_-10px_rgba(22,_23,_24,_0.35),_0px_10px_20px_-15px_rgba(22,_23,_24,_0.2)]"
+            >
+              <ContextMenu.Item
+                asChild
+                className="group font-sans hover:bg-red-100 relative flex h-[25px] select-none items-center rounded-[3px] pl-[25px] pr-[5px] text-[14px] leading-none outline-none data-[disabled]:pointer-events-none "
+              >
+                <AlertDialog.Trigger asChild>
+                  <div
+                    onClick={() => {
+                      console.log("Delete folder");
+                      setIsOpen(true);
+                    }}
+                    className="group font-sans hover:bg-red-100 relative flex h-[25px] select-none items-center rounded-[3px] pl-[25px] pr-[5px] text-[14px] leading-none outline-none data-[disabled]:pointer-events-none "
+                  >
+                    Delete{" "}
+                  </div>
+                </AlertDialog.Trigger>
+              </ContextMenu.Item>
+            </motion.div>
+          </ContextMenu.Content>
+        </ContextMenu.Portal>
+      </ContextMenu.Root>
+      <AlertDialog.Portal>
+        <AlertDialog.Overlay className="fixed inset-0 bg-gray backdrop-blur-sm data-[state=open]:animate-overlayShow" />
+        <AlertDialog.Content className="fixed border border-solid border-gray-100 font-sans left-1/2 top-1/2 max-h-[85vh] w-[90vw] max-w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-md bg-white p-[25px] shadow-[var(--shadow-6)] focus:outline-none data-[state=open]:animate-contentShow">
+          <AlertDialog.Title className="m-0 text-[17px] font-medium text-mauve12">
+            Are you sure you want to delete this folder?
+          </AlertDialog.Title>
+          <AlertDialog.Description className="mb-5 mt-[15px] text-[15px] leading-normal text-mauve11">
+            This action cannot be undone. This will permanently delete{" "}
+            {folderFileCount[0]} file(s) and {folderFileCount[1]} folder(s).
+          </AlertDialog.Description>
+          <div className="flex justify-end gap-[25px]">
+            <AlertDialog.Cancel asChild>
+              <Button disabled={pending} variant="unselected">
+                Cancel
+              </Button>
+            </AlertDialog.Cancel>
+            <AlertDialog.Action asChild>
+              <Button
+                onClick={() => {
+                  setTransition(() => {
+                    deleteFolder(folder.folder_id, pathname);
+                  });
+                }}
+                loading={pending}
+                variant="danger"
+              >
+                Delete folder
+              </Button>
+            </AlertDialog.Action>
+          </div>
+        </AlertDialog.Content>
+      </AlertDialog.Portal>
+    </AlertDialog.Root>
   );
 }

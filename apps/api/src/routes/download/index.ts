@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from "fastify";
-import { client, tgClient } from "../../app.js"; // i love this
-import { DownloadDataUnion } from "@repo/types";
+import { client, socketEventEmitter, tgClient } from "../../app.js"; // i love this
+import { DownloadDataUnion, WebsocketCompleteEvent } from "@repo/types";
 import { decryptBuffer } from "../../handlers/encryption.js";
 
 const download: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
@@ -19,12 +19,22 @@ const download: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     switch (data.type) {
       case "dc":
         // download from discord
-        buf = await client.downloadFile({ chunks: data.chunks });
+        buf = await client.downloadFile({
+          chunks: data.chunks,
+          userId: data.user_id,
+          fileId: data.file_id,
+          eventEmitter: socketEventEmitter,
+          filename: data.file_name,
+        });
         break;
       case "tg":
         // download from telegram
-        buf = await tgClient.donwloadFile({
+        buf = await tgClient.downloadFile({
           fileIds: data.chunks.map((c) => c.file_id),
+          userId: data.user_id,
+          fileId: data.file_id,
+          eventEmitter: socketEventEmitter,
+          filename: data.file_name,
         });
         break;
     }
@@ -38,11 +48,22 @@ const download: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     reply.header("Content-Disposition", `filename=${data.file_name};`);
     reply.header("Content-Type", "application/octet-stream");
 
+    console.log("Data:", data.encrypted);
+
     const decrypted = decryptBuffer(
       buf,
       new Uint8Array(data.encrypted.key),
       new Uint8Array(data.encrypted.iv),
       new Uint8Array(data.encrypted.authTag),
+    );
+
+    socketEventEmitter.emit(
+      "message",
+      JSON.stringify({
+        event: "complete",
+        fileId: data.file_id,
+        user_id: data.user_id,
+      } as WebsocketCompleteEvent),
     );
     return decrypted;
   });

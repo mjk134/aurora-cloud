@@ -1,7 +1,6 @@
 # TODO FOR COMPUTING PROJECT
 - socket download client interface (show toast)
 - socket upload client interface (show toast)
-- IN PROGRESS: Convert create folder modal into using onSubmit handler
 - Add search function using query (search params)
 - draggable files and folders
 - tokenate webhook upload route?
@@ -14,6 +13,9 @@
 - Dashboard
   - Show recents (incl files)
   - show some analysis
+
+- FIX CRITICAL:
+  - Specify if a folder is the root directory
 
 
 ENCRYPTION TASK DETAILS

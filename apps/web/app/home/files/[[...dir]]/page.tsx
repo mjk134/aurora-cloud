@@ -21,20 +21,6 @@ export default async function Files({
   // Last item in param array is the folder id
   const asyncParams = await params;
 
-  // If no folder id, redirect to root folder
-  if (!asyncParams.dir) {
-    redirect("/home/files/0");
-  } else if (asyncParams.dir.length === 0) {
-    redirect("/home/files/0");
-  }
-
-  // Get the folder id
-  const folderId = asyncParams.dir[asyncParams.dir.length - 1];
-
-  if (!folderId) {
-    redirect("/home/files/0");
-  }
-
   // Fetch all files and folders in root folder id: 0
   const user = await getUserFromSession();
 
@@ -42,10 +28,33 @@ export default async function Files({
     redirect("/login");
   }
 
+  const rootFolder = await database.folder.findFirst({
+    where: {
+      user_id: user?.user_id,
+      is_root: true,
+    },
+  });
+
+  // If no folder id, redirect to root folder
+  if (!asyncParams.dir) {
+    redirect("/home/files/" + rootFolder?.folder_id);
+  } else if (asyncParams.dir.length === 0) {
+    redirect("/home/files/" + rootFolder?.folder_id);
+  }
+
+  // Get the folder id
+  const folderId = asyncParams.dir[asyncParams.dir.length - 1];
+
+  if (!folderId) {
+    redirect("/home/files/" + rootFolder?.folder_id);
+  }
+
+
+
   const folderFileIds = await database.parent.findMany({
     where: {
       user_id: user?.user_id,
-      folder_id: asyncParams.dir.length === 1 ? "0" : folderId,
+      folder_id: folderId,
     },
   });
 
@@ -126,7 +135,7 @@ export default async function Files({
           deleteFile={deleteFile}
           className="grid md:grid-cols-3 lg:grid-cols-5 grid-rows-auto gap-4 overflow-scroll pb-32"
           files={files}
-          folders={folders.filter((folder) => folder.folder_id !== "0")}
+          folders={folders.filter((folder) => folder.folder_id !== rootFolder?.folder_id)}
         />
         <CreateFolderModal
           createFolder={createFolder}

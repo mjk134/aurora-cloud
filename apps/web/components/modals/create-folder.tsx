@@ -90,7 +90,7 @@ export function CreateFolderModal({
                 <Button
                   className="px-10"
                   type="submit"
-                  disabled={isPending}
+                  loading={isPending}
                 >
                   Create
                 </Button>

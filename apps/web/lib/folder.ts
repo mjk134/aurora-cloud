@@ -8,14 +8,25 @@ export async function getFolderPath(folderId: string) {
     return "";
   }
 
-  if (folderId === "0") {
-    return "/home/files/0";
+  const rootFolder = await database.folder.findFirst({
+    where: {
+      user_id: user.user_id,
+      is_root: true,
+    },
+  });
+
+  if (!rootFolder) {
+    return "";
+  }
+
+  if (folderId === rootFolder.folder_id) {
+    return "/home/files/" + folderId;
   }
 
   const folderIds = [folderId];
   let currentFolderId = folderId;
 
-  while (currentFolderId !== "0") {
+  while (currentFolderId !== rootFolder.folder_id) {
     const parent = await database.parent.findFirst({
       where: {
         file_id: currentFolderId,
@@ -35,14 +46,25 @@ export async function getFolderPath(folderId: string) {
 }
 
 export async function getFolderPathPublic(folderId: string, userId: string) {
-  if (folderId === "0") {
-    return "/home/files/0";
+  const rootFolder = await database.folder.findFirst({
+    where: {
+      user_id: userId,
+      is_root: true,
+    },
+  });
+
+  if (!rootFolder) {
+    return "";
+  }
+
+  if (folderId === rootFolder.folder_id) {
+    return "/home/files/" + folderId;
   }
 
   const folderIds = [folderId];
   let currentFolderId = folderId;
 
-  while (currentFolderId !== "0") {
+  while (currentFolderId !== rootFolder.folder_id) {
     const parent = await database.parent.findFirst({
       where: {
         file_id: currentFolderId,

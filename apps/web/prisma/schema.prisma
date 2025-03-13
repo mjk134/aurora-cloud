@@ -88,6 +88,7 @@ model Folder {
   folder_id String   @id @default(cuid())
   user_id   String
   name String
+  is_root Boolean    @default(false)
   users     Users    @relation(fields: [user_id], references: [user_id])
   parents   Parent[]
 }

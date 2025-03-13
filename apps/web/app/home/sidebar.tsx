@@ -32,7 +32,7 @@ const routes: Route[] = [
   {
     name: "All files",
     icon: <Files size={24} />,
-    route: "/home/files/0",
+    route: "/home/files/",
     isSlug: true,
   },
   // {

@@ -102,10 +102,10 @@ export async function signUpAction(
     },
   });
 
-  // Create folder 0
+  // Create folder root
   await database.folder.create({
     data: {
-      folder_id: "0",
+      is_root: true,
       user_id: user.user_id,
       name: "Home",
     },

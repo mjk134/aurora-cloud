@@ -35,7 +35,11 @@ clientSocketConnection.addEventListener("error", (error) => {
 })
 
 socketEventEmitter.on('message', (message) => {
-  clientSocketConnection.send(message);
+  try {
+    clientSocketConnection.send(message);
+  } catch (error) {
+    console.log('Error in sending message', error);
+  }
 })
 
 

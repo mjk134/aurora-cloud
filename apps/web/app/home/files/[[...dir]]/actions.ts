@@ -48,32 +48,24 @@ export async function deleteFile(fileId: string, pathname: string) {
     where: {
       file_id: fileId,
       user_id: user?.user_id,
-    },
-    include: {
-      discord_storage: true,
-      telegram_storage: true,
-    },
+    }
   });
 
   if (!dbFile) return;
 
-  if (dbFile.discord_storage) {
-    // purge discord storage entries
-    await database.discordStorage.deleteMany({
-      where: {
-        file_id: fileId,
-        user_id: user.user_id,
-      },
-    });
-  } else if (dbFile.telegram_storage) {
-    // purge telegram storage entries
-    await database.telegramStorage.deleteMany({
-      where: {
-        file_id: fileId,
-        user_id: user.user_id,
-      },
-    });
-  }
+  await database.discordStorage.deleteMany({
+    where: {
+      file_id: fileId,
+      user_id: user.user_id,
+    },
+  });
+
+  await database.telegramStorage.deleteMany({
+    where: {
+      file_id: fileId,
+      user_id: user.user_id,
+    },
+  });
 
   // Delete parent entry
   await database.parent.deleteMany({
@@ -113,10 +105,23 @@ export async function deleteFolder(folderId: string, pathname: string) {
     },
   });
 
-  // Delete files
-  await Promise.all(fileIds.map(async (fileId) => {
-    await deleteFile(fileId, pathname);
-  }));
+  await database.discordStorage.deleteMany({
+    where: {
+      file_id: {
+        in: fileIds,
+      },
+      user_id: user.user_id,
+    },
+  });
+
+  await database.telegramStorage.deleteMany({
+    where: {
+      file_id: {
+        in: fileIds,
+      },
+      user_id: user.user_id,
+    },
+  });
 
   // Delete file entries
   await database.file.deleteMany({

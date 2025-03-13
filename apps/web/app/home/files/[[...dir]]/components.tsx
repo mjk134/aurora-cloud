@@ -52,9 +52,9 @@ export function FileBox({
             ? file.file_name.slice(0, 150) + "..."
             : file.file_name}
           {isPending && (
-            <div className="absolute inset-0 flex justify-center items-center bg-gray-100 bg-opacity-50 rounded-lg">
+            <div className="absolute inset-0 flex justify-center items-center bg-gray backdrop-blur-sm rounded-lg">
               <div className="flex flex-col gap-2 animate-pulse items-center">
-                <div className="w-5 h-5 border-2 border-solid border-gray-600 rounded-full animate-spin"></div>
+                <div className="loader" />
                 <div>Processing...</div>
               </div>
             </div>

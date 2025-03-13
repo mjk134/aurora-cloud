@@ -104,14 +104,12 @@ export function FolderBox({ folder }: { folder: Folder }) {
   const [folderFileCount, setFolderFileCount] = useState([0, 0]);
   
     useEffect(() => {
-      const fetchFolderFileCount = async () => {
-        const count = await getSubFilesCount(folder.folder_id);
-        setFolderFileCount(count);
-      }
-  
       if (isOpen) {
         setContextMenuOpen(false);
-        fetchFolderFileCount();
+        setTransition(async () => {
+          const count = await getSubFilesCount(folder.folder_id);
+          setFolderFileCount(count);
+        });
       }
   
     }, [folder, isOpen, setContextMenuOpen]);

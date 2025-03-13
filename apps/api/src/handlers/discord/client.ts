@@ -324,9 +324,13 @@ export class Client {
         type: "downloading",
       } as WebsocketInitEvent),
     );
-    const messages = await Promise.all(
-      chunks.map((c) => this.getAttachmentUrl(c)),
-    );
+    const messages = [];
+    // Get all attachment urls
+    for (let i = 0; i < chunks.length; i++) {
+      const chunk = chunks[i];
+      const url = await this.getAttachmentUrl(chunk);
+      messages.push(url);
+    }
     // Loop over chunk urls
     for (let i = 0; i < messages.length; i++) {
       const url = messages[i];
@@ -360,12 +364,20 @@ export class Client {
     const msg = await this.rest.get(
       `/channels/${channel_id}/messages/${msg_id}`,
     );
-    const d = (await msg.json()) as Record<string, any>;
-    // If too many chunks, wait and retry
-    if (d.retry_after) {
-      await new Promise((resolve) => setTimeout(resolve, d.retry_after * 1000));
-      return this.getAttachmentUrl(chunk);
+    try {
+      const d = (await msg.json()) as Record<string, any>;
+
+      // If too many chunks, wait and retry
+      if (d.retry_after) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, d.retry_after * 1000),
+        );
+        return this.getAttachmentUrl(chunk);
+      }
+      return d.attachments[0].url as string;
+    } catch (e) {
+      console.log("Error fetching attachment", e, await msg.text());
+      return "";
     }
-    return d.attachments[0].url as string;
   }
 }

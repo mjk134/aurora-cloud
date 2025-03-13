@@ -4,7 +4,7 @@
 - draggable files and folders
 - tokenate webhook upload route?
 - (make YouTube/tt work?)
-- Add exception handling to show some evidence (try catch)
+- IMPORTANT: Add exception handling to show some evidence (try catch)
 - Analysis page
 - Settings
 - Recent folders
@@ -13,6 +13,7 @@
   - Show recents (incl files)
   - show some analysis
 - Fix sidebar to show selection of files directory
+- FIX: ENCRYTPION ISSUE ALLOW FOR LARGE FILES
 
 ### UPGRADE TO TAILWIND CSS V4
 -  fix migrate cli tool errors

@@ -27,6 +27,7 @@ export function encryptBuffer(input: Buffer): {
       authTagLength: 16,
     },
   );
+  // TODO: input can be chunked https://crypto.stackexchange.com/questions/95682/why-is-possible-to-encrypt-multiple-messages-within-the-same-stream-in-aes
   // Pass the data to be encrypted
   const encrypted = cipher.update(Uint8Array.from(input));
   cipher.final();

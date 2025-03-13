@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import crypto from 'crypto';
 import ffmpeg from 'fluent-ffmpeg';
 import { Jimp, JimpMime, ResizeStrategy } from 'jimp';
 import { Readable } from 'stream';
@@ -30,6 +29,7 @@ async function encode(
   numRowsPerFrame = 36
 ): Promise<void> {
   const rawData = fs.readFileSync(infilePath);
+  // @ts-ignore
   let dataBytes = encrypt ? encryptDataAES(rawData, key) : rawData;
 
   const lenOfData = dataBytes.length;
@@ -135,9 +135,11 @@ async function decode(
   let dataBytesRetrieved = dataBytes.subarray(4, lenOfData + 4);
 
   if (decrypt) {
+    // @ts-ignore
     dataBytesRetrieved = decryptDataAES(dataBytesRetrieved, key);
   }
 
+  // @ts-ignore
   fs.writeFileSync(outFilePath, dataBytesRetrieved);
 }
 

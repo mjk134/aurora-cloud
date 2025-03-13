@@ -12,7 +12,7 @@ const download: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     ) as DownloadDataUnion;
     // Download the file
 
-    console.log("Data:", data);
+    request.log.info(`Downloading file: ${data}`);
 
     let buf: Buffer | undefined;
 
@@ -48,7 +48,7 @@ const download: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     reply.header("Content-Disposition", `filename=${data.file_name};`);
     reply.header("Content-Type", "application/octet-stream");
 
-    console.log("Data:", data.encrypted);
+    console.log("Data:", data);
 
     const decrypted = decryptBuffer(
       buf,

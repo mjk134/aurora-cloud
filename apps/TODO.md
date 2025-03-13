@@ -1,4 +1,5 @@
 # TODO FOR COMPUTING PROJECT
+- FIX: TELEGRAM DOWNLOAD
 - Add search function using query (search params)
 - draggable files and folders
 - tokenate webhook upload route?

@@ -58,8 +58,11 @@ export async function GET(
 
   let data: DownloadDataUnion | undefined;
 
+ 
+
   // Check location of file using dbFile by check its relation with DiscordStorage/TelegramStorage
-  if (dbFile.discord_storage) {
+  if (dbFile.discord_storage.length > 0) {
+    
     // proccess discord request
     data = {
       chunks: dbFile.discord_storage.map((chunk) => {
@@ -78,7 +81,8 @@ export async function GET(
       file_id: dbFile.file_id,
       type: "dc",
     };
-  } else if (dbFile.telegram_storage) {
+  } else if (dbFile.telegram_storage.length > 0) {
+    console.log(dbFile.telegram_storage)
     // process telegram request
     data = {
       chunks: dbFile.telegram_storage.map((chunk) => {

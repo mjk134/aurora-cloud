@@ -121,7 +121,7 @@ export default function FileDropzone({
           setTimeout(() => {
             // Wait for webhooks to update the file list
             router.refresh();
-          }, 1000);
+          }, 2000);
 
           break;
       }

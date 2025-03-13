@@ -8,6 +8,7 @@ import Button from "./ui/button";
 import { File, Folder } from "@prisma/client";
 import { FileBox, FolderBox } from "../app/home/files/[[...dir]]/components";
 import useContextMenu from "../hooks/useContextMenu";
+import {toast} from 'sonner'
 
 export default function FileDropzone({
   files,
@@ -26,7 +27,6 @@ export default function FileDropzone({
 }) {
   const [showInput, setShowInput] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const pathname = usePathname();
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [pendingFiles, setFiles] = useState<
     {
@@ -55,6 +55,12 @@ export default function FileDropzone({
 
       switch (data.event) {
         case "init":
+          toast.loading("Uploading file...");
+          console.log(
+            "[Client Socket] Started uploading file with id:",
+            data.fileId,
+            data
+          );
           break;
         case "chunk":
           console.log(

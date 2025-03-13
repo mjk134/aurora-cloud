@@ -49,8 +49,6 @@ export default async function Files({
     redirect("/home/files/" + rootFolder?.folder_id);
   }
 
-
-
   const folderFileIds = await database.parent.findMany({
     where: {
       user_id: user?.user_id,
@@ -70,7 +68,7 @@ export default async function Files({
       file_id: {
         in: folderFileIds.map((folder) => folder.file_id),
       },
-      user_id: user?.user_id,
+      user_id: user.user_id,
     },
   });
 
@@ -80,7 +78,7 @@ export default async function Files({
       folder_id: {
         in: folderFileIds.map((folder) => folder.file_id),
       },
-      user_id: user?.user_id,
+      user_id: user.user_id,
     },
   });
 
@@ -109,7 +107,7 @@ export default async function Files({
         uploading. Right-click files to manage them.
       </p>
       <Input placeholder="Search files" />
-      <div className="flex relative flex-col h-full w-full overflow-hidden">
+      <div className="@container flex relative flex-col h-full w-full overflow-hidden">
         <div className="flex gap-2">
           {pathFolders.map((folder, index) => {
             return (
@@ -133,7 +131,7 @@ export default async function Files({
           currentFolderId={folderId}
           userId={user?.user_id}
           deleteFile={deleteFile}
-          className="grid md:grid-cols-3 lg:grid-cols-5 grid-rows-auto gap-4 overflow-scroll pb-32"
+          className="grid grid-cols-4 @md:grid-cols-5 @lg:grid-cols-6 grid-rows-auto gap-4 overflow-scroll pb-32"
           files={files}
           folders={folders.filter((folder) => folder.folder_id !== rootFolder?.folder_id)}
         />

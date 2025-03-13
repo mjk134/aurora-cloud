@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserFromSession, getVerfiedSession } from "../../../lib/session";
-import { redirect } from "next/navigation";
+import { getUserFromSession } from "../../../lib/session";
 import { UploadResponse } from "@repo/types";
-import database from "../../../lib/database";
 
 export async function POST(req: NextRequest) {
   // Check if session is valid
@@ -18,6 +16,7 @@ export async function POST(req: NextRequest) {
   // Read query params
   const searchParams = req.nextUrl.searchParams;
   const folderId = searchParams.get("folderId");
+  const tempFileId = searchParams.get("tempFileId");
 
   if (!folderId) {
     return NextResponse.json({
@@ -31,7 +30,7 @@ export async function POST(req: NextRequest) {
   const formData = await req.formData();
   // Don't make this blocking.
   const apiRequest = await fetch(
-    `http://localhost:3000/upload?userId=${user.user_id}&folderId=${folderId}`,
+    `http://localhost:3000/upload?userId=${user.user_id}&folderId=${folderId}&tempFileId=${tempFileId}`,
     {
       method: "POST",
       body: formData,

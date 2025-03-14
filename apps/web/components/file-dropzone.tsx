@@ -126,7 +126,7 @@ export default function FileDropzone({
           break;
       }
     },
-    [pendingFiles, setFiles, socket],
+    [pendingFiles, router],
   );
 
   useEffect(() => {
@@ -155,7 +155,7 @@ export default function FileDropzone({
     return () => {
       socket.current?.close();
     };
-  }, [pendingFiles, setFiles]);
+  }, [pendingFiles, setFiles, updateFiles, userId]);
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -180,7 +180,7 @@ export default function FileDropzone({
     for (const file of files) {
       const formData = new FormData();
       formData.append("file", file);
-      const tempId = Math.random().toString(36).substring(12);
+      const tempId = Math.random().toString(36).substring(1);
       const toastId = toast.loading(`Uploading ${file.name}...`);
       setFiles((files) => [
         ...files,

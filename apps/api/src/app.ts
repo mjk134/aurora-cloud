@@ -36,7 +36,15 @@ clientSocketConnection.addEventListener("error", (error) => {
 
 socketEventEmitter.on('message', (message) => {
   try {
-    clientSocketConnection.send(message);
+    if (clientSocketConnection.OPEN) {
+      clientSocketConnection.send(message);
+    } else{
+      // Reconnect
+      clientSocketConnection.resume()
+      clientSocketConnection.addEventListener("open", () => {
+        clientSocketConnection.send(Buffer.from(JSON.stringify({ server_id: 'server'})).toString('base64'));
+      })
+    }
   } catch (error) {
     console.log('Error in sending message', error);
   }

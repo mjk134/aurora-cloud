@@ -1,4 +1,10 @@
-import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
+import {
+  CipherCCM,
+  createCipheriv,
+  createDecipheriv,
+  DecipherCCM,
+  randomBytes,
+} from "crypto";
 /**
  * Encrypt a buffer using AES-192-CCM defined by the NIST
  * @param input The buffer to encrypt
@@ -27,9 +33,9 @@ export function encryptBuffer(input: Buffer): {
       authTagLength: 16,
     },
   );
-  // TODO: input can be chunked https://crypto.stackexchange.com/questions/95682/why-is-possible-to-encrypt-multiple-messages-within-the-same-stream-in-aes
+  // input can be chunked https://crypto.stackexchange.com/questions/95682/why-is-possible-to-encrypt-multiple-messages-within-the-same-stream-in-aes
   // Pass the data to be encrypted
-  const encrypted = cipher.update(Uint8Array.from(input));
+  const encrypted = chunkFileWithEncryptionChipher(cipher, input);
   cipher.final();
   // Get the authentication tag, which is used to verify the data integrity
   const tag = cipher.getAuthTag();
@@ -51,7 +57,33 @@ export function decryptBuffer(
     authTagLength: 16,
   });
   decipher.setAuthTag(tag);
-  const plaintext = decipher.update(Uint8Array.from(inputBuffer));
+  const plaintext = chunkFileWithDecryptionCipher(decipher, inputBuffer);
   decipher.final();
   return plaintext;
+}
+
+function chunkFileWithEncryptionChipher(cipher: CipherCCM, buf: Buffer) {
+  const chunkSize = 100 * 1024 * 1024; // 5MB
+  const chunks = [];
+  for (let i = 0; i < buf.length; i += chunkSize) {
+    const end = Math.min(i + chunkSize, buf.length);
+    chunks.push(
+      Uint8Array.from(cipher.update(Uint8Array.from(buf.subarray(i, end)))),
+    );
+  }
+
+  return Buffer.concat(chunks);
+}
+
+function chunkFileWithDecryptionCipher(decipher: DecipherCCM, buf: Buffer) {
+  const chunkSize = 100 * 1024 * 1024; // 5MB
+  const chunks = [];
+  for (let i = 0; i < buf.length; i += chunkSize) {
+    const end = Math.min(i + chunkSize, buf.length);
+    chunks.push(
+      Uint8Array.from(decipher.update(Uint8Array.from(buf.subarray(i, end)))),
+    );
+  }
+
+  return Buffer.concat(chunks);
 }

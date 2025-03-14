@@ -12,7 +12,6 @@ import {
   Upload,
   UserRoundCog,
 } from "lucide-react";
-import Link from "next/link";
 
 type Route = {
   name: string;
@@ -21,7 +20,7 @@ type Route = {
   isSlug: boolean;
 };
 
-// Declared outside component to avoid re-creating the array on each render
+// Declared outside component to avoid re-creating the array on each render TODO: CHANGE THIS TO ADD ROOT FOLDER support
 const routes: Route[] = [
   {
     name: "Dashboard",
@@ -35,12 +34,6 @@ const routes: Route[] = [
     route: "/home/files/",
     isSlug: true,
   },
-  // {
-  //     name: "Upload",
-  //     icon: <Upload size={24} />,
-  //     route: "/home/upload",
-  //     isSlug: false,
-  // },
   {
     name: "Settings",
     icon: <Cog size={24} />,

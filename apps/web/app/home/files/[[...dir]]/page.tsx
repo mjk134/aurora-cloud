@@ -11,6 +11,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import path from "path";
 import { CreateFolderModal } from "../../../../components/modals/create-folder";
+import SearchFiles from "../../../../components/files-search";
 
 // root param means folder id = 0
 export default async function Files({
@@ -106,9 +107,10 @@ export default async function Files({
         The best place to upload and manage your files. Drag files in to begin
         uploading. Right-click files to manage them.
       </p>
-      <Input placeholder="Search files" />
+      <SearchFiles />
       <div className="@container flex relative flex-col h-full w-full overflow-hidden">
         <div className="flex gap-2">
+          {/* TODO: Prevent re-render */}
           {pathFolders.map((folder, index) => {
             return (
               <div key={folder.folder_id} className="flex items-center gap-2">

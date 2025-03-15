@@ -9,9 +9,14 @@ export type UploadTaskData = {
     type: string;
     size: number;
   };
-  buffer: Buffer;
+  fileId: string;
   folderId: string;
   tempFileId: string;
+  encrypted: {
+    iv: Buffer;
+    key: Buffer;
+    authTag: Buffer;
+  }
 };
 export interface UploadTask extends HandlerTask {
   data: UploadTaskData;

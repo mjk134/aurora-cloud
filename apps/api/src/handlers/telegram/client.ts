@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createDecipheriv, randomUUID } from "node:crypto";
 import { REST } from "../rest";
 import { EventEmitter } from "node:stream";
 import { BlobPart } from "../discord/types";
@@ -7,12 +7,15 @@ import {
   WebsocketCompleteEvent,
   WebsocketInitEvent,
 } from "@repo/types";
+import CacheManager from "../cache";
+import { ReadStream } from "node:fs";
 
 export class TelegramClient {
   private _token: string;
   private rest: REST;
   private DEFAULT_CHAT_ID: string = "6361636845";
   private fileRest: REST;
+  private DEFAULT_CHUNK_SIZE = 20 * 1024 * 1024;
 
   constructor(token: string) {
     this._token = token;
@@ -25,13 +28,13 @@ export class TelegramClient {
   }
 
   private chunkFile(file: Buffer): Buffer[] {
-    const chunkSize = 20 * 1024 * 1024; // 50 MB limit but 20 MB for bots
+    const chunkSize = this.DEFAULT_CHUNK_SIZE; // 50 MB limit but 20 MB for bots
     const maxChunks = Math.ceil(file.length / chunkSize);
     const chunks = [];
     for (let i = 0; i < maxChunks; i++) {
       const start = i * chunkSize;
       const end = (i + 1) * chunkSize;
-      chunks.push(file.slice(start, end));
+      chunks.push(file.subarray(start, end));
     }
     return chunks;
   }
@@ -64,6 +67,12 @@ export class TelegramClient {
         };
       };
     };
+    if (!msg.ok) {
+      // Retry
+      console.log("Failed to upload chunk, retrying...", msg);
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      return await this.uploadChunk({ chatId, chunkId, fileId, chunkData });
+    }
     return msg.result.document.file_id;
   }
 
@@ -80,12 +89,9 @@ export class TelegramClient {
     tempFileId: string;
     userId: string;
   }): Promise<
-    [
-      string,
-      {
-        file_id: string;
-      }[],
-    ]
+    {
+      file_id: string;
+    }[]
   > {
     const fileId = randomUUID();
     const chunks = this.chunkFile(fileBuffer);
@@ -143,14 +149,85 @@ export class TelegramClient {
         user_id: userId,
       } as WebsocketCompleteEvent),
     );
-    return [
+    return messages.map((m) => {
+      return {
+        file_id: m,
+      };
+    });
+  }
+
+  public async uploadStreamedFile({
+    chatId,
+    eventEmitter,
+    tempFileId,
+    userId,
+    fileId,
+  }: {
+    chatId?: string;
+    eventEmitter: EventEmitter;
+    tempFileId: string;
+    userId: string;
+    fileId: string;
+  }): Promise<
+    {
+      file_id: string;
+    }[]
+  > {
+    const cacheManager = CacheManager.getInstance();
+    const readStream = cacheManager.getFileReadStreamFromCache(
       fileId,
-      messages.map((m) => {
-        return {
-          file_id: m,
-        };
-      }),
-    ];
+      this.DEFAULT_CHUNK_SIZE,
+    );
+    const totalChunks = Math.ceil(
+      cacheManager.getFileData(fileId)!.length / this.DEFAULT_CHUNK_SIZE,
+    );
+    eventEmitter.emit(
+      "message",
+      JSON.stringify({
+        event: "init",
+        fileId: tempFileId,
+        user_id: userId,
+        chunks: totalChunks,
+      } as WebsocketInitEvent),
+    );
+
+    const messages = [];
+    let i = 0;
+    for await (const chunk of readStream) {
+      const document = await this.uploadChunk({
+        chatId: chatId ?? this.DEFAULT_CHAT_ID,
+        chunkId: randomUUID(),
+        fileId,
+        chunkData: chunk,
+      });
+      messages.push(document);
+      eventEmitter.emit(
+        "message",
+        JSON.stringify({
+          event: "chunk",
+          fileId: tempFileId,
+          chunk: i,
+          progress: (i + 1) / totalChunks,
+          proccessed: true,
+          user_id: userId,
+        } as WebsocketChunkEvent),
+      );
+      i++;
+    }
+
+    eventEmitter.emit(
+      "message",
+      JSON.stringify({
+        event: "complete",
+        fileId: tempFileId,
+        user_id: userId,
+      } as WebsocketCompleteEvent),
+    );
+    return messages.map((m) => {
+      return {
+        file_id: m,
+      };
+    });
   }
 
   public async downloadFile({
@@ -178,9 +255,12 @@ export class TelegramClient {
         type: "downloading",
       } as WebsocketInitEvent),
     );
-    const files = await Promise.all(
-      fileIds.map((id) => this.getFile({ fileId: id })),
-    );
+    const files = [];
+
+    for (const fileId of fileIds) {
+      files.push(await this.getFile({ fileId: fileId }));
+    }
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (file) {
@@ -201,6 +281,74 @@ export class TelegramClient {
     }
     return Buffer.concat(chunkArr);
   }
+
+  public async downloadStreamedFileWithDecryption({
+    fileIds,
+    eventEmitter,
+    userId,
+    fileId,
+    filename,
+    key,
+    iv,
+    tag
+  }: {
+    fileIds: string[];
+    eventEmitter: EventEmitter;
+    userId: string;
+    fileId: string;
+    filename: string;
+    key: Uint8Array,
+    iv: Uint8Array,
+    tag: Uint8Array,
+  }): Promise<ReadStream> {
+    const cacheManager = CacheManager.getInstance()
+    const writeStream = cacheManager.createFileWriteStreamToCache(fileId)
+    eventEmitter.emit(
+      "message",
+      JSON.stringify({
+        event: "init",
+        fileId: fileId,
+        chunks: fileIds.length,
+        user_id: userId,
+        file_name: filename,
+        type: "downloading",
+      } as WebsocketInitEvent),
+    );
+    const decipher = createDecipheriv("aes-192-gcm", key, iv, {
+      authTagLength: 16,
+    });
+    decipher.setAuthTag(tag);
+
+    const files = [];
+
+    for (const fileId of fileIds) {
+      files.push(await this.getFile({ fileId: fileId }));
+    }
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file) {
+        const chunk = await this.downloadFileChunk({ filePath: file });
+        const decryptedChunk = decipher.update(new Uint8Array(chunk));
+        writeStream.write(decryptedChunk);
+        eventEmitter.emit(
+          "message",
+          JSON.stringify({
+            event: "chunk",
+            fileId: fileId,
+            chunk: i,
+            progress: (i + 1) / fileIds.length,
+            proccessed: true,
+            user_id: userId,
+          } as WebsocketChunkEvent),
+        );
+      }
+    }
+    decipher.final();
+    writeStream.close();
+    return cacheManager.getFileReadStreamFromCache(fileId)
+  }
+
 
   public async sendMessage({
     chatId = this.DEFAULT_CHAT_ID,
@@ -240,6 +388,11 @@ export class TelegramClient {
 
     if (fileInfo.ok) {
       return fileInfo.result.file_path;
+    } else {
+      // Retry
+      console.log("Failed to get file, retrying...", fileInfo);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return await this.getFile({ fileId });
     }
   }
 
@@ -249,7 +402,6 @@ export class TelegramClient {
     filePath: string;
   }): Promise<Buffer> {
     const res = await this.fileRest.get(`/${filePath}`);
-    console.log("Downloaded file:", res);
     const arrayBuffer = await res.arrayBuffer();
     return Buffer.from(arrayBuffer);
   }

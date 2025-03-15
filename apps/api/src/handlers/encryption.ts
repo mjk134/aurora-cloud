@@ -1,12 +1,8 @@
-import {
-  CipherCCM,
-  createCipheriv,
-  createDecipheriv,
-  DecipherCCM,
-  randomBytes,
-} from "crypto";
+import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
+import { WriteStream } from "fs";
+import { Readable } from "stream";
 /**
- * Encrypt a buffer using AES-192-CCM defined by the NIST
+ * Encrypt a buffer using AES-192-GCM defined by the NIST
  * @param input The buffer to encrypt
  */
 export function encryptBuffer(input: Buffer): {
@@ -26,7 +22,7 @@ export function encryptBuffer(input: Buffer): {
   const iv = randomBytes(7);
   // Create a cipher object
   const cipher = createCipheriv(
-    "aes-192-ccm",
+    "aes-192-gcm",
     Uint8Array.from(key),
     Uint8Array.from(iv),
     {
@@ -35,7 +31,17 @@ export function encryptBuffer(input: Buffer): {
   );
   // input can be chunked https://crypto.stackexchange.com/questions/95682/why-is-possible-to-encrypt-multiple-messages-within-the-same-stream-in-aes
   // Pass the data to be encrypted
-  const encrypted = chunkFileWithEncryptionChipher(cipher, input);
+  const chunkSize = 100 * 1024 * 1024; // 100 MB
+  const maxChunks = Math.ceil(input.length / chunkSize);
+  const chunks = [];
+  for (let i = 0; i < maxChunks; i++) {
+    const start = i * chunkSize;
+    const end = (i + 1) * chunkSize;
+    const data = cipher.update(Uint8Array.from(input.subarray(start, end)));
+    chunks.push(Uint8Array.from(data));
+  }
+  const encrypted = Buffer.concat(chunks);
+
   cipher.final();
   // Get the authentication tag, which is used to verify the data integrity
   const tag = cipher.getAuthTag();
@@ -53,37 +59,58 @@ export function decryptBuffer(
   iv: Uint8Array,
   tag: Uint8Array,
 ): Buffer {
-  const decipher = createDecipheriv("aes-192-ccm", key, iv, {
+  const decipher = createDecipheriv("aes-192-gcm", key, iv, {
     authTagLength: 16,
   });
   decipher.setAuthTag(tag);
-  const plaintext = chunkFileWithDecryptionCipher(decipher, inputBuffer);
+  const chunkSize = 100 * 1024 * 1024; // 100MB
+  const chunks = [];
+  for (let i = 0; i < inputBuffer.length; i += chunkSize) {
+    const end = Math.min(i + chunkSize, inputBuffer.length);
+    chunks.push(
+      Uint8Array.from(
+        decipher.update(Uint8Array.from(inputBuffer.subarray(i, end))),
+      ),
+    );
+  }
+  const plaintext = Buffer.concat(chunks);
   decipher.final();
   return plaintext;
 }
 
-function chunkFileWithEncryptionChipher(cipher: CipherCCM, buf: Buffer) {
-  const chunkSize = 100 * 1024 * 1024; // 5MB
-  const chunks = [];
-  for (let i = 0; i < buf.length; i += chunkSize) {
-    const end = Math.min(i + chunkSize, buf.length);
-    chunks.push(
-      Uint8Array.from(cipher.update(Uint8Array.from(buf.subarray(i, end)))),
-    );
+export async function encryptFileStream(
+  input: Readable,
+  output: WriteStream,
+): Promise<{
+  key: Buffer;
+  iv: Buffer;
+  tag: Buffer;
+  length: number;
+}> {
+  const key = randomBytes(24);
+  const iv = randomBytes(7);
+  const cipher = createCipheriv(
+    "aes-192-gcm",
+    Uint8Array.from(key),
+    Uint8Array.from(iv),
+    {
+      authTagLength: 16,
+    },
+  );
+  let totallength = 0;
+  for await (const chunk of input) {
+    const encrypted = cipher.update(Uint8Array.from(chunk as Buffer));
+    totallength += encrypted.length
+    output.write(Uint8Array.from(encrypted));
   }
-
-  return Buffer.concat(chunks);
+  cipher.final();
+  output.close();
+  const tag = cipher.getAuthTag();
+  return {
+    key,
+    iv,
+    tag,
+    length: totallength
+  };
 }
 
-function chunkFileWithDecryptionCipher(decipher: DecipherCCM, buf: Buffer) {
-  const chunkSize = 100 * 1024 * 1024; // 5MB
-  const chunks = [];
-  for (let i = 0; i < buf.length; i += chunkSize) {
-    const end = Math.min(i + chunkSize, buf.length);
-    chunks.push(
-      Uint8Array.from(decipher.update(Uint8Array.from(buf.subarray(i, end)))),
-    );
-  }
-
-  return Buffer.concat(chunks);
-}

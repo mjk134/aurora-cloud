@@ -22,6 +22,7 @@ interface DownloadData {
     user_id: string;
     file_name: string;
     file_id: string;
+    file_length: number | BigInt;
 }
 
 export interface DiscordDownloadData extends DownloadData {
@@ -47,8 +48,8 @@ interface WebsocketEvent {}
 export interface WebsocketInitEvent extends WebsocketEvent {
     event: 'init';
     fileId: string;
-    chunks: number;
     user_id: string;
+    chunks: number;
     type?: 'downloading' | 'uploading';
     file_name?: string;
 }
@@ -56,7 +57,6 @@ export interface WebsocketInitEvent extends WebsocketEvent {
 export interface WebsocketChunkEvent extends WebsocketEvent {
     event: 'chunk';
     fileId: string;
-    chunk: number;
     progress: number;
     proccessed: boolean;
 }

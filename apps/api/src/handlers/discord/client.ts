@@ -1,13 +1,6 @@
 import { REST } from "../rest.js";
-import {
-  Attachment,
-  BlobPart,
-  Message,
-  UploadChunkOptions,
-  UploadChunksOptions,
-} from "./types/index.js";
-import fs from "node:fs/promises";
-import { randomUUID } from "node:crypto";
+import { Attachment, BlobPart, UploadChunkOptions } from "./types/index.js";
+import { createDecipheriv, randomUUID } from "node:crypto";
 import {
   DiscordResponse,
   WebsocketChunkEvent,
@@ -15,6 +8,8 @@ import {
   WebsocketInitEvent,
 } from "@repo/types";
 import EventEmitter from "node:events";
+import CacheManager from "../cache.js";
+import { ReadStream } from "node:fs";
 
 export class Client {
   private _token: string;
@@ -57,39 +52,18 @@ export class Client {
       body: data,
     });
     const msg = (await res.json()) as Record<string, any>;
+    if (msg.retry_after) {
+      await new Promise((resolve) =>
+        setTimeout(resolve, msg.retry_after * 1000),
+      );
+      return this.uploadChunk({ channelId, chunkId, fileId, chunkData });
+    }
+
     const attachment = {
       ...msg.attachments[0],
       message_id: msg.id,
     };
     return attachment as Attachment;
-  }
-
-  public async uploadChunks({
-    channelId,
-    chunkIds,
-    fileId,
-    chunkData,
-  }: UploadChunksOptions): Promise<Attachment[]> {
-    const data = new FormData();
-    data.append("payload_json", JSON.stringify({ content: fileId }));
-    for (let i = 0; i < chunkIds.length; i++) {
-      const chunkId = chunkIds[i];
-      const chunk = chunkData[i];
-      if (!chunk) {
-        console.log("Failed to read chunk", i, chunk);
-        continue;
-      }
-      data.append(
-        `files[${i}]`,
-        new Blob([chunk], { type: "text/plain" }),
-        chunkId,
-      );
-    }
-    const res = await this.rest.post(`/channels/${channelId}/messages`, {
-      body: data,
-    });
-    const msg = (await res.json()) as Record<string, any>;
-    return msg.attachments as Attachment[];
   }
 
   private chunkFile(file: Buffer): Buffer[] {
@@ -102,45 +76,6 @@ export class Client {
       chunks.push(file.slice(start, end));
     }
     return chunks;
-  }
-
-  /**
-   * Should only be used for testing purposes. This function uploads a file to discord.
-   */
-  public async upload({
-    channelId,
-    filePath,
-  }: {
-    channelId: string;
-    filePath: string;
-  }): Promise<Message> {
-    const file = await fs.readFile(filePath);
-    const fileId = randomUUID();
-    const chunks = this.chunkFile(file);
-    const attachments: Attachment[] = [];
-    for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i];
-      if (!chunk) {
-        console.log("Failed to read chunk", i, chunk);
-        continue;
-      }
-      const attachment = await this.uploadChunk({
-        channelId,
-        chunkId: randomUUID(),
-        fileId,
-        chunkData: chunk as unknown as BlobPart,
-      });
-      attachments.push(attachment);
-    }
-    return {
-      content: "file uploaded",
-      "files[0]": fileId,
-      payload_json: JSON.stringify({ content: fileId }),
-      attachments: attachments.map((a) => ({
-        url: a.url,
-        id: a.message_id,
-      })),
-    };
   }
 
   /**
@@ -158,7 +93,7 @@ export class Client {
     eventEmitter: EventEmitter;
     userId: string;
     tempFileId: string;
-  }): Promise<[string, DiscordResponse]> {
+  }): Promise<DiscordResponse> {
     const fileId = randomUUID();
     const chunks = this.chunkFile(fileBuffer);
     // Initalisation complete
@@ -217,86 +152,88 @@ export class Client {
         user_id: userId,
       } as WebsocketCompleteEvent),
     );
-    return [
-      fileId,
-      {
-        chunks: attachments.map((a) => {
-          return {
-            url: a.url,
-            message_id: a.message_id,
-          };
-        }),
-      },
-    ];
-  }
-
-  private chunkFileAsText(file: Buffer): Buffer[] {
-    // Max chunk size is 2000 UTF-16 characters
-    console.log("file.length", file.length);
-    // 1999 * 2 = 3998 (UTF-16 characters) + 1 for the backslash
-    const chunkSize = 1999 * 2;
-    const maxChunks = Math.ceil(file.length / chunkSize);
-    console.log("maxChunks", maxChunks);
-    const chunks = [];
-    for (let i = 0; i < maxChunks; i++) {
-      const start = i * chunkSize;
-      const end = (i + 1) * chunkSize;
-      chunks.push(file.slice(start, end));
+    return {
+      chunks: attachments.map((a) => {
+        return {
+          url: a.url,
+          message_id: a.message_id,
+        };
+      }),
     }
-    console.log("chunks", chunks.length);
-    return chunks;
   }
 
-  private async uploadChunkAsText({
+  public async uploadStreamedFile({
     channelId,
-    chunkId,
+    eventEmitter,
+    userId,
+    tempFileId,
     fileId,
-    chunkData,
-  }: UploadChunkOptions): Promise<Record<string, any>> {
-    const blob = new Blob([chunkData]);
-    const decoder = new TextDecoder("UTF-16");
-    const d = decoder.decode(await blob.arrayBuffer());
-    const data = {
-      content: `\\${d}`,
-    };
-
-    const res = await this.rest.post(
-      `/channels/${channelId}/messages`,
-      { body: JSON.stringify(data) },
-      true,
+  }: {
+    channelId?: string;
+    eventEmitter: EventEmitter;
+    userId: string;
+    tempFileId: string;
+    fileId: string;
+  }): Promise<DiscordResponse> {
+    const cacheManager = CacheManager.getInstance();
+    const readStream = cacheManager.getFileReadStreamFromCache(
+      fileId,
+      10 * 1024 * 1024,
+    );
+    const attachments: Attachment[] = [];
+    const totalChunks = Math.ceil(
+      cacheManager.getFileData(fileId)!.length /
+        (10 * 1024 * 1024),
+    );
+    eventEmitter.emit(
+      "message",
+      JSON.stringify({
+        event: "init",
+        fileId: tempFileId,
+        user_id: userId,
+        chunks: totalChunks,
+      } as WebsocketInitEvent),
     );
 
-    const msg = (await res.json()) as Record<string, any>;
-
-    return msg;
-  }
-
-  public async uploadAsText({
-    channelId,
-    filePath,
-  }: {
-    channelId: string;
-    filePath: string;
-  }): Promise<{}> {
-    const file = await fs.readFile(filePath);
-    const fileId = randomUUID();
-    const chunks = this.chunkFileAsText(file);
-    const contents: {}[] = [];
-    for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i];
-      if (!chunk) {
-        console.log("Failed to read chunk", i, chunk);
-        continue;
-      }
-      const content = await this.uploadChunkAsText({
-        channelId,
+    let chunkCount = 0;
+    for await (const chunk of readStream) {
+      const attachment = await this.uploadChunk({
+        channelId: channelId ?? this.DEFAULT_CHANNEL,
         chunkId: randomUUID(),
         fileId,
-        chunkData: chunk as unknown as BlobPart,
+        chunkData: Uint8Array.from(chunk as Buffer),
       });
-      contents.push(content);
+      attachments.push(attachment);
+      eventEmitter.emit(
+        "message",
+        JSON.stringify({
+          event: "chunk",
+          fileId: tempFileId,
+          progress: (chunkCount + 1) / totalChunks,
+          proccessed: true,
+          user_id: userId,
+        } as WebsocketChunkEvent),
+      );
+      chunkCount++;
     }
-    return {};
+
+    eventEmitter.emit(
+      "message",
+      JSON.stringify({
+        event: "complete",
+        fileId: tempFileId,
+        user_id: userId,
+      } as WebsocketCompleteEvent),
+    );
+
+    return {
+      chunks: attachments.map((a) => {
+        return {
+          url: a.url,
+          message_id: a.message_id,
+        };
+      }),
+    }
   }
 
   public async downloadFile({
@@ -324,13 +261,7 @@ export class Client {
         type: "downloading",
       } as WebsocketInitEvent),
     );
-    const messages = [];
-    // Get all attachment urls
-    for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i];
-      const url = await this.getAttachmentUrl(chunk);
-      messages.push(url);
-    }
+    const messages = await this.getAttachmentUrls(chunks);
     // Loop over chunk urls
     for (let i = 0; i < messages.length; i++) {
       const url = messages[i];
@@ -353,6 +284,79 @@ export class Client {
     }
     // Concat to get the final buffer for the file
     return Buffer.concat(bufArr);
+  }
+
+  public async downloadStreamedFileWithDecryption({
+    chunks,
+    eventEmitter,
+    userId,
+    fileId,
+    filename,
+    key,
+    iv,
+    tag
+  }: {
+    chunks: { message_id: string; channel_id: string }[];
+    eventEmitter: EventEmitter;
+    userId: string;
+    fileId: string;
+    filename: string;
+    key: Uint8Array,
+    iv: Uint8Array,
+    tag: Uint8Array,
+  }): Promise<ReadStream> {
+    const cacheManager = CacheManager.getInstance()
+    const writeStream = cacheManager.createFileWriteStreamToCache(fileId)
+    eventEmitter.emit(
+      "message",
+      JSON.stringify({
+        event: "init",
+        fileId: fileId,
+        chunks: chunks.length,
+        user_id: userId,
+        file_name: filename,
+        type: "downloading",
+      } as WebsocketInitEvent),
+    );
+    const decipher = createDecipheriv("aes-192-gcm", key, iv, {
+      authTagLength: 16,
+    });
+    decipher.setAuthTag(tag);
+    const urls = await this.getAttachmentUrls(chunks);
+
+    for (let i = 0; i < urls.length; i++) {
+      const res = await fetch(urls[i]);
+      const arrayBuffer = await res.arrayBuffer();
+      const decrypted = decipher.update(new Uint8Array(arrayBuffer));
+      writeStream.write(decrypted);
+      eventEmitter.emit(
+        "message",
+        JSON.stringify({
+          event: "chunk",
+          fileId: fileId,
+          chunk: i,
+          progress: (i + 1) / chunks.length,
+          proccessed: true,
+          user_id: userId,
+        } as WebsocketChunkEvent),
+      );
+    }
+    decipher.final();
+    writeStream.close();
+    return cacheManager.getFileReadStreamFromCache(fileId);
+  }
+
+  private async getAttachmentUrls(chunks: {
+    message_id: string;
+    channel_id: string;
+  }[]): Promise<string[]> {
+    const urls = [];
+    for (let i = 0; i < chunks.length; i++) {
+      const chunk = chunks[i];
+      const url = await this.getAttachmentUrl(chunk);
+      urls.push(url);
+    }
+    return urls;
   }
 
   private async getAttachmentUrl(chunk: {

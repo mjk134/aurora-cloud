@@ -1,8 +1,8 @@
 import { FastifyPluginAsync } from "fastify"
 import { webhookRest } from "../../app.js" // i love this
 import { UploadResponse } from "@repo/types"
+import CacheManager from "../../handlers/cache"
 import UserQueueHandler, { Handler, QueueHandler } from "../../handlers/queues.js"
-
 
 const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.register(import('@fastify/multipart'), {
@@ -13,9 +13,16 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
   fastify.post('/', async function (request, reply) : Promise<UploadResponse> {
     const data = await request.file()
-    const fileBuffer = await data?.toBuffer()
+    if (!data) {
+      return {
+        error: true,
+        message: "no file"
+      }
+    }
 
-    request.log.info(`Data size is: ${fileBuffer?.byteLength} bytes.`)
+    const encryptedFileData = await CacheManager.getInstance().addEncryptedFileToCache({
+      readable: data.file
+    })
 
     let params = new URLSearchParams(request.raw.url?.split('/upload')[1])
 
@@ -38,14 +45,9 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       }
     }
 
-    if (!fileBuffer) {
-      return {
-        error: true,
-        message: "no file"
-      }
-    }
+    console.log(encryptedFileData.length + " bytes of data encrypted.")
 
-    // Declare a handle for this upload
+    // Declare a handler for this upload
     const handler = new Handler(
       userId,
       {
@@ -54,9 +56,14 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
           file: {
             name: data?.filename as string, // Name of file incl. extension
             type: data?.mimetype as string, // MIME type
-            size: fileBuffer.buffer.byteLength // No. of bytes
+            size: encryptedFileData.length  // No. of bytes
           },
-          buffer: fileBuffer,
+          encrypted: {
+            iv: encryptedFileData.iv,
+            key: encryptedFileData.key,
+            authTag: encryptedFileData.tag
+          },
+          fileId: encryptedFileData.fileId,
           folderId: folderId,
           tempFileId: tempFileId ? tempFileId : "none" // If no tempFileId, set to none
         }

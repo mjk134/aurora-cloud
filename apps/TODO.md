@@ -12,7 +12,7 @@
   - Show recents (incl files)
   - show some analysis
 - Fix sidebar to show selection of files directory
-- FIX: ENCRYTPION ISSUE ALLOW FOR LARGE FILES -> CHUNKING
+- FIX: ISSUE WITH LARGE FILES -> MUST BE STORED ONTO DISK AND READ RATHER THAN BUFFERED IN MEMORY
 
 ### UPGRADE TO TAILWIND CSS V4
 -  fix migrate cli tool errors

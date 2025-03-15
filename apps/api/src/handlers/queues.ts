@@ -1,13 +1,15 @@
 import { HandlerTaskUnion, UploadTaskData } from "./types";
+// @ts-ignore
 import { client, tgClient } from "../app";
 import {
   DiscordWebhookUploadAction,
   QueueItemType,
+  // @ts-ignore
   TelegramWebhookUploadAction,
 } from "@repo/types";
 import { REST } from "./rest";
 import { socketEventEmitter } from "../app";
-import { encryptBuffer } from "./encryption";
+import CacheManager from "./cache";
 
 /**
  * This class is used to handle the queue for each user.
@@ -51,7 +53,7 @@ export class QueueHandler {
     Handler[]
   >();
   private processing = new Map<QueueItemType, boolean>();
-  private types: QueueItemType[] = ["dc", "tg"]; // 'tt', 'yt' => Not implemented yet
+  private types: QueueItemType[] = [ "tg", "dc" ]; // 'tt', 'yt' => Not implemented yet
 
   constructor() {
     // For each can be used since the types are fixed
@@ -82,7 +84,7 @@ export class QueueHandler {
 
     // If the queue lengths are all the same then we can add to any queue, use the most prioritized queue
     if (!queueToUse) {
-      queueToUse = this.types[0]; //TODO: this is tempororay, instead check difference between queue lengths
+      queueToUse = this.types[0]; //TODO: this is temproray, instead check difference between queue lengths
     }
 
     if (!queueToUse) return;
@@ -149,19 +151,36 @@ export class Handler {
     data: UploadTaskData,
     itemType: QueueItemType,
   ): Promise<void> {
+    const cacheManager = CacheManager.getInstance();
     // upload the file
-
-    const encrypted = encryptBuffer(data.buffer);
+    const fileLength = cacheManager.getFileData(data.fileId)?.length;
+    if (!fileLength) {
+      console.error("File not found in cache.");
+      return;
+    }
+    console.log(`Uploading file ${data.file.name} with ${fileLength} bytes.`);
 
     switch (itemType) {
+      // upload to discord
       case "dc":
-        // upload to discord
-        const [_, dcResponse] = await client.uploadBufferFile({
-          fileBuffer: encrypted.buf,
-          eventEmitter: socketEventEmitter,
-          userId: this.userId,
-          tempFileId: data.tempFileId,
-        });
+        let dcResponse;
+
+        // If it will cause a memory error, upload the file in chunks
+        if (fileLength > 15 * 1024 * 1024) {
+          dcResponse = await client.uploadStreamedFile({
+            eventEmitter: socketEventEmitter,
+            userId: this.userId,
+            tempFileId: data.tempFileId,
+            fileId: data.fileId,
+          });
+        } else {
+          dcResponse = await client.uploadBufferFile({
+            eventEmitter: socketEventEmitter,
+            userId: this.userId,
+            tempFileId: data.tempFileId,
+            fileBuffer: await cacheManager.getFileBufferFromCache(data.fileId),
+          });
+        }
 
         // Send the webhook
         this.rest.post(
@@ -173,11 +192,7 @@ export class Handler {
               data: {
                 type: "dc",
                 chunks: dcResponse.chunks,
-                encrypted: {
-                  iv: encrypted.iv,
-                  key: encrypted.key,
-                  authTag: encrypted.tag,
-                },
+                encrypted: data.encrypted,
               } as DiscordWebhookUploadAction,
             }),
           },
@@ -186,12 +201,22 @@ export class Handler {
         break;
       case "tg":
         // upload to telegram
-        const [__, chunks] = await tgClient.uploadBufferFile({
-          fileBuffer: encrypted.buf,
-          eventEmitter: socketEventEmitter,
-          userId: this.userId,
-          tempFileId: data.tempFileId,
-        });
+        let chunks;
+        if (fileLength > 15 * 1024 * 1024) {
+          chunks = await tgClient.uploadStreamedFile({
+            eventEmitter: socketEventEmitter,
+            userId: this.userId,
+            tempFileId: data.tempFileId,
+            fileId: data.fileId,
+          });
+        } else {
+          chunks = await tgClient.uploadBufferFile({
+            fileBuffer: await cacheManager.getFileBufferFromCache(data.fileId),
+            eventEmitter: socketEventEmitter,
+            userId: this.userId,
+            tempFileId: data.tempFileId,
+          });
+        }
 
         // Send the webhook
         this.rest.post(
@@ -203,11 +228,7 @@ export class Handler {
               data: {
                 type: "tg",
                 chunks: chunks,
-                encrypted: {
-                  iv: encrypted.iv,
-                  key: encrypted.key,
-                  authTag: encrypted.tag,
-                },
+                encrypted: data.encrypted,
               } as TelegramWebhookUploadAction,
             }),
           },
@@ -215,5 +236,8 @@ export class Handler {
         );
         break;
     }
+
+    // Remove the file from the cache
+    await cacheManager.removeFileFromCache(data.fileId);
   }
 }

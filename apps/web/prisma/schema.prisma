@@ -73,7 +73,7 @@ model File {
   user_id          String
   file_name        String
   file_type        String
-  file_size        Int
+  file_size        BigInt
   key              Bytes
   iv               Bytes
   auth_tag         Bytes

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getUserFromSession } from "../../../../lib/session";
 import database from "../../../../lib/database";
 import { DownloadDataUnion } from "@repo/types";
+// import { Client } from 'undici'
 
 export async function GET(
   req: NextRequest,
@@ -58,11 +59,8 @@ export async function GET(
 
   let data: DownloadDataUnion | undefined;
 
- 
-
   // Check location of file using dbFile by check its relation with DiscordStorage/TelegramStorage
   if (dbFile.discord_storage.length > 0) {
-    
     // proccess discord request
     data = {
       chunks: dbFile.discord_storage.map((chunk) => {
@@ -79,10 +77,11 @@ export async function GET(
       },
       user_id: user.user_id,
       file_id: dbFile.file_id,
+      file_length: BigInt(dbFile.file_size),
       type: "dc",
     };
   } else if (dbFile.telegram_storage.length > 0) {
-    console.log(dbFile.telegram_storage)
+    console.log(dbFile.telegram_storage);
     // process telegram request
     data = {
       chunks: dbFile.telegram_storage.map((chunk) => {
@@ -98,6 +97,7 @@ export async function GET(
       file_name: dbFile.file_name,
       user_id: user.user_id,
       file_id: dbFile.file_id,
+      file_length: BigInt(dbFile.file_size),
       type: "tg",
     };
   }
@@ -110,14 +110,19 @@ export async function GET(
     });
   }
 
-  const chunks = Buffer.from(JSON.stringify(data)).toString("base64");
-  const res = await fetch(`http://localhost:3000/download?chunks=${chunks}`);
-  const blob = await res.blob();
+  const replacer = (key: string, value: any) =>
+    typeof value === "bigint" ? { $bigint: value.toString() } : value;
+
+  const chunks = Buffer.from(JSON.stringify(data, replacer)).toString("base64");
+  // TODO: fix timeout issue
+  const res = await fetch(`http://localhost:3000/download?chunks=${chunks}`, {
+    signal: AbortSignal.timeout(429496729),
+  });
   const headers = new Headers(res.headers);
   headers.set("Content-Disposition", `filename=${dbFile.file_name};`);
 
   // this is just to display the file in the browser, perhaps for user avatar
   // headers.set('Content-Type', dbFile.file_type);
 
-  return new NextResponse(blob, { status: 200, statusText: "OK", headers });
+  return new NextResponse(res.body, { status: 200, statusText: "OK", headers });
 }

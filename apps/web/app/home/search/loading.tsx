@@ -8,7 +8,6 @@ export default function Loading() {
       <SearchFiles disabled />
       <div className="@container flex relative flex-col h-full w-full overflow-hidden">
         <div className="flex gap-2">
-          {/* TODO: Prevent re-render */}
           <div className="text-xl font-medium mt-3 pb-4">Loading files...</div>
         </div>
         <div className="grid grid-cols-4 @md:grid-cols-5 @lg:grid-cols-6 grid-rows-auto gap-4 overflow-scroll pb-32">

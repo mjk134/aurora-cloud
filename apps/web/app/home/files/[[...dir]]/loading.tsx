@@ -10,7 +10,7 @@ export default function Loading() {
       </p>
       <SearchFiles disabled />
       <div className="@container flex relative flex-col h-full w-full overflow-hidden">
-        <div className="flex gap-2">{/* TODO: Prevent re-render */}
+        <div className="flex gap-2">
           <div className="text-xl font-medium mt-3 pb-4">
             Loading files...
           </div>

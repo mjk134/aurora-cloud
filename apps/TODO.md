@@ -1,16 +1,15 @@
 # TODO FOR COMPUTING PROJECT
 - draggable files and folders
-- tokenate webhook upload route?
+- tokenate (all fastify routes?) webhook upload route?
 - (make YouTube/tt work?)
-- IMPORTANT: Add exception handling to show some evidence (try catch)
-- Analysis page
-- Settings
-- Recent folders
+- IMPORTANT (FINAL): Add exception handling to show some evidence (try catch)
+- PRIO: Analysis page
+- PRIO: Settings
+- PRIO: Recent folders
   - Add to local storage every time a folder is clicked
-- Dashboard
+- PRIO: Dashboard
   - Show recents (incl files)
   - show some analysis
-- Fix sidebar to show selection of files directory
 
 ### UPGRADE TO TAILWIND CSS V4
 -  fix migrate cli tool errors

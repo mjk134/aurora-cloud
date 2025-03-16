@@ -41,6 +41,8 @@ export default async function Files({
     redirect("/home/files/" + rootFolder?.folder_id);
   } else if (asyncParams.dir.length === 0) {
     redirect("/home/files/" + rootFolder?.folder_id);
+  } else if (asyncParams.dir[0] !== rootFolder?.folder_id) {
+    redirect("/home/files/" + rootFolder?.folder_id);
   }
 
   // Get the folder id

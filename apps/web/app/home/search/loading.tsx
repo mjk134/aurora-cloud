@@ -3,7 +3,7 @@ import SearchFiles from "../../../components/files-search";
 export default function Loading() {
   return (
     <div className="flex relative font-sans flex-col p-5 h-screen w-full">
-      <h1 className="text-4xl font-bold">Search files</h1>
+      <h1 className="text-4xl font-bold">Search Files</h1>
       <p className="text-lg">Search for files and folders.</p>
       <SearchFiles disabled />
       <div className="@container flex relative flex-col h-full w-full overflow-hidden">

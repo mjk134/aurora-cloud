@@ -10,6 +10,7 @@
 - PRIO: Dashboard
   - Show recents (incl files)
   - show some analysis
+    - 
 
 ### UPGRADE TO TAILWIND CSS V4
 -  fix migrate cli tool errors

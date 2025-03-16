@@ -15,6 +15,7 @@ export default function FileDropzone({
   userId,
   deleteFile,
   currentFolderId,
+  children,
 }: {
   folders: Folder[];
   files: File[];
@@ -22,6 +23,7 @@ export default function FileDropzone({
   userId: string;
   deleteFile: (fileId: string, path: string) => Promise<void>;
   currentFolderId: string;
+  children?: React.ReactNode;
 }) {
   const [showInput, setShowInput] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -219,6 +221,7 @@ export default function FileDropzone({
       {files.map((file) => (
         <FileBox key={file.file_id} file={file} deleteFile={deleteFile} />
       ))}
+      {children}
     </div>
   );
 }

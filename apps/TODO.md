@@ -1,5 +1,4 @@
 # TODO FOR COMPUTING PROJECT
-- Add search function using query (search params)
 - draggable files and folders
 - tokenate webhook upload route?
 - (make YouTube/tt work?)
@@ -12,7 +11,6 @@
   - Show recents (incl files)
   - show some analysis
 - Fix sidebar to show selection of files directory
-- FIX: ISSUE WITH LARGE FILES -> MUST BE STORED ONTO DISK AND READ RATHER THAN BUFFERED IN MEMORY
 
 ### UPGRADE TO TAILWIND CSS V4
 -  fix migrate cli tool errors

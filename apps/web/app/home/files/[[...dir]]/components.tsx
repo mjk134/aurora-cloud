@@ -13,7 +13,6 @@ import React, { useCallback, useEffect, useState, useTransition } from "react";
 import { AlertDialog, ContextMenu } from "radix-ui";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import Link from "next/link";
 import { deleteFolder, getSubFilesCount } from "./actions";
 
 export function FileBox({
@@ -112,7 +111,7 @@ export function FileBox({
   );
 }
 
-export function FolderBox({ folder }: { folder: Folder }) {
+export function FolderBox({ folder, customLink }: { folder: Folder; customLink?: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const [, setContextMenuOpen] = React.useState(false);
@@ -137,7 +136,7 @@ export function FolderBox({ folder }: { folder: Folder }) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            onClick={() => router.push(`${pathname}/${folder.folder_id}`)}
+            onClick={() => router.push(customLink ? customLink : `${pathname}/${folder.folder_id}`)}
             className="flex relative hover:cursor-pointer flex-col h-[150px] w-[150px] md:h-[200px] md:w-[200px] lg:h-[240px] lg:w-[240px] justify-center text-center p-2 items-center border border-solid font-light text-sm border-gray-600 rounded-lg"
           >
             <FolderIcon size={80} strokeWidth={1} />

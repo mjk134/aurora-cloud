@@ -34,6 +34,7 @@ export async function POST(
   const encrypted = data.encrypted;
 
   console.log("Data recieved on webhook: ", body);
+  console.log("Number of chunks: ", data.chunks.length);
 
   const user = await database.users.findFirst({
     where: {

@@ -117,7 +117,7 @@ export async function GET(
     dispatcher: new Agent({
       keepAliveTimeout: 2147483647,
       keepAliveMaxTimeout: 2147483647,
-      headersTimeout: 2147483647,
+      headersTimeout: 2147483647, // 32 bit signed integer max value
     })
   });
   const headers = new Headers(res.headers);

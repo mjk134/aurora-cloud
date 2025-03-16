@@ -9,6 +9,7 @@ import {
   DoorOpen,
   Files,
   House,
+  Search,
   Upload,
   UserRoundCog,
 } from "lucide-react";
@@ -20,33 +21,7 @@ type Route = {
   isSlug: boolean;
 };
 
-// Declared outside component to avoid re-creating the array on each render TODO: CHANGE THIS TO ADD ROOT FOLDER support
-const routes: Route[] = [
-  {
-    name: "Dashboard",
-    icon: <House size={24} />,
-    route: "/home",
-    isSlug: false,
-  },
-  {
-    name: "All files",
-    icon: <Files size={24} />,
-    route: "/home/files/",
-    isSlug: true,
-  },
-  {
-    name: "Settings",
-    icon: <Cog size={24} />,
-    route: "/home/settings",
-    isSlug: false,
-  },
-  {
-    name: "Analysis",
-    icon: <ChartPie size={24} />,
-    route: "/home/analytics",
-    isSlug: false,
-  },
-];
+
 
 function verifyRoute(route: Route, pathname: string): "primary" | "unselected" {
   if (route.isSlug) {
@@ -67,11 +42,46 @@ function verifyRoute(route: Route, pathname: string): "primary" | "unselected" {
 export default function Sidebar({
   user,
   logout,
+  rootFolderId
 }: {
   user: Users;
   logout: () => void;
+  rootFolderId: string;
 }) {
   const pathname = usePathname();
+  // Declared outside component to avoid re-creating the array on each render TODO: CHANGE THIS TO ADD ROOT FOLDER support
+const routes: Route[] = [
+  {
+    name: "Dashboard",
+    icon: <House size={24} />,
+    route: "/home",
+    isSlug: false,
+  },
+  {
+    name: "All files",
+    icon: <Files size={24} />,
+    route: `/home/files/${rootFolderId}`,
+    isSlug: true,
+  },
+  {
+    name: "Search",
+    icon: <Search size={24} />,
+    route: "/home/search",
+    isSlug: false,
+  },
+  {
+    name: "Settings",
+    icon: <Cog size={24} />,
+    route: "/home/settings",
+    isSlug: false,
+  },
+  {
+    name: "Analysis",
+    icon: <ChartPie size={24} />,
+    route: "/home/analytics",
+    isSlug: false,
+  },
+];
 
   return (
     <div className="flex flex-col w-[20vw] rounded-r-lg border justify-between border-r-slate-100 p-5">

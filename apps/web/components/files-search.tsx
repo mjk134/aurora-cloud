@@ -4,11 +4,18 @@ import { useEffect, useRef, useState } from "react";
 import Input from "./ui/input";
 import { SearchIcon } from "lucide-react";
 import { cn } from "../lib/style";
+import { redirect, usePathname } from "next/navigation";
 
-export default function SearchFiles() {
+export default function SearchFiles({
+  initalSearch = "",
+  disabled = false,
+}: {
+  initalSearch?: string;  
+  disabled?: boolean;
+}) {
   const [focused, setFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(initalSearch);
 
   const handler = (e: KeyboardEvent) => {
     if (e.key === "s" && e.ctrlKey) {
@@ -17,6 +24,11 @@ export default function SearchFiles() {
       setFocused(true);
       inputRef.current?.focus();
     }
+  };
+
+  const handleEnter = () => {
+    // Proccess search
+    redirect(`/home/search?q=${encodeURIComponent(search)}`);
   };
 
   useEffect(() => {
@@ -34,6 +46,7 @@ export default function SearchFiles() {
         "w-full relative gap-4 bg-transparent",
         focused && "ring ring-blue-400",
       )}
+      disabled={disabled}
     >
       <SearchIcon />
       <div className="w-full relative">
@@ -57,6 +70,12 @@ export default function SearchFiles() {
           onFocus={() => {
             setFocused(true);
           }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleEnter();
+            }
+          }}
+          value={search}
           onChange={(e) => {
             setSearch(e.target.value);
           }}

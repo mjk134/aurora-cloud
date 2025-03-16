@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getUserFromSession } from "../../../../lib/session";
 import database from "../../../../lib/database";
 import { DownloadDataUnion } from "@repo/types";
-// import { Client } from 'undici'
+import { fetch, Agent } from 'undici'
 
 export async function GET(
   req: NextRequest,
@@ -81,7 +81,6 @@ export async function GET(
       type: "dc",
     };
   } else if (dbFile.telegram_storage.length > 0) {
-    console.log(dbFile.telegram_storage);
     // process telegram request
     data = {
       chunks: dbFile.telegram_storage.map((chunk) => {
@@ -114,15 +113,31 @@ export async function GET(
     typeof value === "bigint" ? { $bigint: value.toString() } : value;
 
   const chunks = Buffer.from(JSON.stringify(data, replacer)).toString("base64");
-  // TODO: fix timeout issue
   const res = await fetch(`http://localhost:3000/download?chunks=${chunks}`, {
-    signal: AbortSignal.timeout(429496729),
+    dispatcher: new Agent({
+      keepAliveTimeout: 2147483647,
+      keepAliveMaxTimeout: 2147483647,
+      headersTimeout: 2147483647,
+    })
   });
   const headers = new Headers(res.headers);
   headers.set("Content-Disposition", `filename=${dbFile.file_name};`);
+  const stream = res.body as ReadableStream<Uint8Array>;
 
   // this is just to display the file in the browser, perhaps for user avatar
   // headers.set('Content-Type', dbFile.file_type);
 
-  return new NextResponse(res.body, { status: 200, statusText: "OK", headers });
+  if (
+    !res.body ||
+    !res.headers.get("content-type") ||
+    !res.headers.get("content-disposition")
+  ) {
+    return new NextResponse(null, { status: 404 });
+  }
+
+  return new NextResponse(stream, {
+    status: 200,
+    headers: headers,
+    statusText: "OK",
+  });
 }

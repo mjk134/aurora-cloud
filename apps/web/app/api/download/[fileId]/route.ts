@@ -135,6 +135,7 @@ export async function GET(
     return new NextResponse(null, { status: 404 });
   }
 
+  // Takes 412904.13469999935 milliseconds to download a 2.3GB file
   return new NextResponse(stream, {
     status: 200,
     headers: headers,

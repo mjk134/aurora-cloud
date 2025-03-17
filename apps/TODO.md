@@ -10,7 +10,10 @@
 - PRIO: Dashboard
   - Show recents (incl files)
   - show some analysis
-    - 
+    - Tree map
+    - Pie chart of telegram to discord
+    - Bar chart of file types
+    - Bar chart of file sizes
 
 ### UPGRADE TO TAILWIND CSS V4
 -  fix migrate cli tool errors

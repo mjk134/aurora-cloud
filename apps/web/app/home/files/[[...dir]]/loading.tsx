@@ -17,7 +17,7 @@ export default function Loading() {
         </div>
         <div className="grid grid-cols-4 @md:grid-cols-5 @lg:grid-cols-6 grid-rows-auto gap-4 overflow-scroll pb-32">
           {Array.from({ length: 18 }).map((_, index) => (
-            <div className="p-4">
+            <div key={index} className="p-4">
               <div className="animate-pulse h-[240px] w-[240px] rounded bg-gray-100"></div>
             </div>
           ))}

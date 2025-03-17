@@ -23,18 +23,20 @@ const download: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     ) as DownloadDataUnion;
     // Download the file
 
-    request.log.info(`Downloading file, with length: ${data.file_length}`);
+    request.log.info(`Downloading file, with length: ${data.file_length}, type: ${typeof data.file_length}`);
     console.log("Data:", data);
 
     let buf: Buffer | undefined;
     let stream: Readable | undefined;
+    request.log.info(`Is not longer than 15MB: ${BigInt(data.file_length as bigint) < BigInt(15728640)}`)
 
     if (BigInt(data.file_length as bigint) < BigInt(15728640)) {
+      let buffer;
 
       switch (data.type) {
         case "dc":
           // download from discord
-          buf = await client.downloadFile({
+          buffer = await client.downloadFile({
             chunks: data.chunks,
             userId: data.user_id,
             fileId: data.file_id,
@@ -44,7 +46,7 @@ const download: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
           break;
         case "tg":
           // download from telegram
-          buf = await tgClient.downloadFile({
+          buffer = await tgClient.downloadFile({
             fileIds: data.chunks.map((c) => c.file_id),
             userId: data.user_id,
             fileId: data.file_id,
@@ -54,14 +56,15 @@ const download: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
           break;
       }
   
-      if (!buf) {
+      if (!buffer) {
         throw new Error("Failed to download file");
       }
 
-      request.log.info(`Arr length: ${buf.byteLength}`);
+      request.log.info(`Arr length: ${buffer.byteLength}`);
+      request.log.info("Arr length:", buffer.length);
 
       buf = decryptBuffer(
-        buf,
+        buffer,
         new Uint8Array(data.encrypted.key),
         new Uint8Array(data.encrypted.iv),
         new Uint8Array(data.encrypted.authTag),

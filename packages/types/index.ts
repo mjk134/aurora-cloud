@@ -22,7 +22,7 @@ interface DownloadData {
     user_id: string;
     file_name: string;
     file_id: string;
-    file_length: number | BigInt;
+    file_length: BigInt;
 }
 
 export interface DiscordDownloadData extends DownloadData {

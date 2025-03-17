@@ -327,6 +327,7 @@ export class Client {
     for (let i = 0; i < urls.length; i++) {
       const res = await fetch(urls[i]);
       const arrayBuffer = await res.arrayBuffer();
+      console.log("Downloaded chunk:", arrayBuffer.byteLength);
       const decrypted = decipher.update(new Uint8Array(arrayBuffer));
       writeStream.write(decrypted);
       eventEmitter.emit(

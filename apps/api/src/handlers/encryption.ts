@@ -31,17 +31,7 @@ export function encryptBuffer(input: Buffer): {
   );
   // input can be chunked https://crypto.stackexchange.com/questions/95682/why-is-possible-to-encrypt-multiple-messages-within-the-same-stream-in-aes
   // Pass the data to be encrypted
-  const chunkSize = 100 * 1024 * 1024; // 100 MB
-  const maxChunks = Math.ceil(input.length / chunkSize);
-  const chunks = [];
-  for (let i = 0; i < maxChunks; i++) {
-    const start = i * chunkSize;
-    const end = (i + 1) * chunkSize;
-    const data = cipher.update(Uint8Array.from(input.subarray(start, end)));
-    chunks.push(Uint8Array.from(data));
-  }
-  const encrypted = Buffer.concat(chunks);
-
+  const encrypted = cipher.update(Uint8Array.from(input));
   cipher.final();
   // Get the authentication tag, which is used to verify the data integrity
   const tag = cipher.getAuthTag();
@@ -63,19 +53,9 @@ export function decryptBuffer(
     authTagLength: 16,
   });
   decipher.setAuthTag(tag);
-  const chunkSize = 100 * 1024 * 1024; // 100MB
-  const chunks = [];
-  for (let i = 0; i < inputBuffer.length; i += chunkSize) {
-    const end = Math.min(i + chunkSize, inputBuffer.length);
-    chunks.push(
-      Uint8Array.from(
-        decipher.update(Uint8Array.from(inputBuffer.subarray(i, end))),
-      ),
-    );
-  }
-  const plaintext = Buffer.concat(chunks);
+  const decrypted = decipher.update(Uint8Array.from(inputBuffer));
   decipher.final();
-  return plaintext;
+  return decrypted;
 }
 
 export async function encryptFileStream(

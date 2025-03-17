@@ -6,6 +6,10 @@ import fspromises from "fs/promises";
 
 export default class CacheManager {
   public async removeFileFromCache(fileId: string) {
+    // Check if the file exists
+    if (!this.cache.has(fileId)) {
+      return;
+    }
     // Remove the file from the cache
     await fspromises.unlink("../cache/" + fileId);
   }

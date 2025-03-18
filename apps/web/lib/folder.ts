@@ -83,3 +83,24 @@ export async function getFolderPathPublic(folderId: string, userId: string) {
   return "/home/files/" + folderIds.reverse().join("/");
 }
 
+export async function getTreeMapData(userId: string) {
+
+  const rootFolder = await database.folder.findFirst({
+    where: {
+      user_id: userId,
+      is_root: true,
+    },
+  });
+
+  if (!rootFolder) {
+    return [];
+  }
+
+  const data = []
+
+  // Traverse the folder tree
+
+
+  
+
+}

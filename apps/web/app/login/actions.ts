@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import database from "../../lib/database";
 import { passwordRegex, verifyPassword } from "../../lib/password";
 import type { FormActionResponse } from "../../types";
-import { createSession } from "../../lib/session";
+import { createSession, deleteSession } from "../../lib/session";
 
 export async function loginAction(
   prevState: any,
@@ -107,6 +107,7 @@ export async function loginAction(
     };
   }
 
+  await deleteSession()
   await createSession(user.user_id);
   console.log("Session created");
 

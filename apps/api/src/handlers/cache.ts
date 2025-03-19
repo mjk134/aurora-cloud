@@ -2,7 +2,6 @@ import { randomUUID } from "crypto";
 import { Readable } from "stream";
 import { encryptFileStream } from "./encryption";
 import fs, { WriteStream } from "fs";
-import fspromises from "fs/promises";
 
 export default class CacheManager {
   public async removeFileFromCache(fileId: string) {
@@ -11,7 +10,7 @@ export default class CacheManager {
       return;
     }
     // Remove the file from the cache
-    await fspromises.unlink("../cache/" + fileId);
+    await fs.promises.unlink("../cache/" + fileId);
   }
   private static instance: CacheManager;
 

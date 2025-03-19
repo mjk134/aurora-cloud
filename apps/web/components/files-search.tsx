@@ -10,7 +10,7 @@ export default function SearchFiles({
   initalSearch = "",
   disabled = false,
 }: {
-  initalSearch?: string;  
+  initalSearch?: string;
   disabled?: boolean;
 }) {
   const [focused, setFocused] = useState(false);
@@ -43,8 +43,8 @@ export default function SearchFiles({
     <Input
       asChild
       className={cn(
-        "w-full relative gap-4 bg-transparent",
-        focused && "ring ring-blue-400",
+        "w-full py-4 text-xl relative gap-4 bg-transparent",
+        focused && "ring ring-blue-400 border-white",
       )}
       disabled={disabled}
     >
@@ -53,7 +53,7 @@ export default function SearchFiles({
         <span
           className={cn(
             "text-black text-opacity-25 absolute left-0 -z-10",
-            (focused || search.length !== 0) && "hidden",
+            search.length !== 0 && "hidden",
           )}
         >
           Search files, or use{" "}

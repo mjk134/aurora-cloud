@@ -3,7 +3,7 @@ import SearchFiles from "../../../../components/files-search";
 export default function Loading() {
   return (
     <div className="flex relative font-sans flex-col p-5 h-screen w-full">
-      <h1 className="text-4xl font-bold">All Files</h1>
+      <h1 className="text-5xl font-bold">All Files</h1>
       <p className="text-lg">
         The best place to upload and manage your files. Drag files in to begin
         uploading. Right-click files to manage them.

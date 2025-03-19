@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import database from "../../../../../lib/database";
-import { WebhookUploadActionUnion, WebsocketCompleteEvent } from "@repo/types";
-import { revalidatePath } from "next/cache";
-import { getFolderPath, getFolderPathPublic } from "../../../../../lib/folder";
+import { WebhookUploadActionUnion } from "@repo/types";
 
 // Tokenate this so that this route cannot be exploited
 export async function POST(

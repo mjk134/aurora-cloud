@@ -15,4 +15,19 @@ export interface LocalStorageSchema {
     folderName: string;
     folderPath: string;
   }[];
+  recentFiles: {
+    fileId: string;
+    fileName: string;
+    folderPath: string;
+  }[];
+}
+
+export type FileTreeObjType = {
+  name: string;
+  size: number;
+}
+
+export type FolderFileTree = {
+  name: string;
+  children: (FileTreeObjType | FolderFileTree)[];
 }

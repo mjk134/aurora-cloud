@@ -2,7 +2,7 @@ import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
 import { WriteStream } from "fs";
 import { Readable } from "stream";
 /**
- * Encrypt a buffer using AES-192-GCM defined by the NIST
+ * Encrypt a buffer using AES-192-GCM defined by the NIST (Galois counter mode)
  * @param input The buffer to encrypt
  */
 export function encryptBuffer(input: Buffer): {

@@ -47,7 +47,7 @@ export default async function Search({
 
   return (
     <div className="flex relative font-sans flex-col p-5 h-screen w-full">
-      <h1 className="text-4xl font-bold">Search Files</h1>
+      <h1 className="text-5xl font-bold">Search Files</h1>
       <p className="text-lg">
         {query ? (
           <>

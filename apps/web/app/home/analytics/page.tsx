@@ -3,6 +3,8 @@ import { getUserFromSession } from "../../../lib/session";
 import database from "../../../lib/database";
 import FileTypeBarChart from "../../../components/analysis/file-type-bar-chart";
 import FileSizeBarChart from "../../../components/analysis/file-size-bar-chart";
+import { getTreeMapData, getTreeMapDataTest } from "../../../lib/folder";
+import FolderTreeMap from "../../../components/analysis/tree-map";
 
 export default async function Analysis() {
   const user = await getUserFromSession();
@@ -47,13 +49,15 @@ export default async function Analysis() {
     take: 8,
   });
 
+  const treeData = await getTreeMapData(user.user_id);
+
   return (
     <div className="flex relative font-sans flex-col p-5 h-screen w-full">
-      <h1 className="text-4xl font-bold">Analysis</h1>
+      <h1 className="text-5xl font-bold">Analysis</h1>
       <p className="text-lg">
         View how your files are being stored and other specifics.
       </p>
-      <div className="grid grid-cols-2 grid-rows-auto relative flex-col h-full w-full overflow-hidden">
+      <div className="grid grid-cols-2 gap-4 grid-rows-auto relative flex-col h-full w-full overflow-scroll">
         <div className="flex flex-col justify-center items-center">
           <div className="text-xl font-medium mt-3 pb-4">
             File storage spread (%)
@@ -70,6 +74,10 @@ export default async function Analysis() {
         <div className="flex flex-col justify-center items-center">
           <div className="text-xl font-medium mt-3 pb-4">File Sizes (top 10)</div>
           <FileSizeBarChart fileSizes={fileSizes} />
+        </div>
+        <div className="flex flex-col justify-center items-center">
+          <div className="text-xl font-medium mt-3 pb-4">Tree Map</div>
+          <FolderTreeMap data={treeData} />
         </div>
       </div>
     </div>

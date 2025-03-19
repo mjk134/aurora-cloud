@@ -14,16 +14,20 @@ import { AlertDialog, ContextMenu } from "radix-ui";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { deleteFolder, getSubFilesCount } from "./actions";
+import { setFileClicked, setFolderClicked } from "../../../../lib/local";
 
 export function FileBox({
   file,
   deleteFile,
+  customFolderLink
 }: {
   file: File;
   deleteFile: (fileId: string, path: string) => Promise<void>;
+  customFolderLink?: string;
 }) {
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
+  const [, setContextMenuOpen] = React.useState(false);
   const getFileIcon = useCallback(() => {
     if (file.file_type.includes("image")) {
       return <FileImage size={64} strokeWidth={1} />;
@@ -41,7 +45,7 @@ export function FileBox({
   const handleDownload = useCallback(async () => {
     const res = await fetch("/api/download/" + file.file_id);
     const blob = await res.blob();
-    const url = window.URL.createObjectURL(new Blob([blob]));
+    const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
     link.download = file.file_name;
@@ -52,11 +56,16 @@ export function FileBox({
   }, []);
 
   return (
-    <ContextMenu.Root>
+    <ContextMenu.Root onOpenChange={setContextMenuOpen}>
       <ContextMenu.Trigger asChild>
         <motion.div
+          id={file.file_id}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
+          onDoubleClick={() => {
+            setFileClicked(file.file_id, file.file_name, customFolderLink ? customFolderLink : pathname);
+            setContextMenuOpen(true);
+          }}
           className="flex relative flex-col gap-1 h-[150px] w-[150px] md:h-[200px] md:w-[200px] lg:h-[240px] lg:w-[240px] justify-center text-center p-2 items-center border border-solid font-light text-sm border-gray-600 rounded-lg"
         >
           {getFileIcon()}
@@ -95,6 +104,7 @@ export function FileBox({
               <button
                 disabled={isPending}
                 onClick={() => {
+                  setFileClicked(file.file_id, file.file_name, pathname);
                   startTransition(async () => {
                     await handleDownload();
                   });
@@ -111,7 +121,13 @@ export function FileBox({
   );
 }
 
-export function FolderBox({ folder, customLink }: { folder: Folder; customLink?: string }) {
+export function FolderBox({
+  folder,
+  customLink,
+}: {
+  folder: Folder;
+  customLink?: string;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const [, setContextMenuOpen] = React.useState(false);
@@ -136,7 +152,12 @@ export function FolderBox({ folder, customLink }: { folder: Folder; customLink?:
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            onClick={() => router.push(customLink ? customLink : `${pathname}/${folder.folder_id}`)}
+            onClick={() => {
+              setFolderClicked(folder.folder_id, folder.name, customLink ? customLink : `${pathname}/${folder.folder_id}`);
+              router.push(
+                customLink ? customLink : `${pathname}/${folder.folder_id}`,
+              );
+            }}
             className="flex relative hover:cursor-pointer flex-col h-[150px] w-[150px] md:h-[200px] md:w-[200px] lg:h-[240px] lg:w-[240px] justify-center text-center p-2 items-center border border-solid font-light text-sm border-gray-600 rounded-lg"
           >
             <FolderIcon size={80} strokeWidth={1} />

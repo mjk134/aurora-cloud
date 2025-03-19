@@ -49,7 +49,7 @@ export default function FileDropzone({
             data,
           );
           if (data.type === "downloading") {
-            const toastId = toast.loading(`Downloading ${data.file_name}...`)
+            const toastId = toast.loading(`Downloading ${data.file_name}...`);
             setFiles((files) => {
               return [
                 ...files,
@@ -57,7 +57,7 @@ export default function FileDropzone({
                   fileId: data.fileId,
                   filename: data.file_name,
                   status: "downloading",
-                  toastId
+                  toastId,
                 },
               ];
             });
@@ -180,6 +180,12 @@ export default function FileDropzone({
 
     // Maybe promise.all this??
     for (const file of files) {
+      // Check file length
+      if (file.size === 0) {
+        toast.error(`File ${file.name} is empty! This service only supports files with content.`);
+        continue;
+      }
+
       const formData = new FormData();
       formData.append("file", file);
       const tempId = Math.random().toString(36).substring(1);

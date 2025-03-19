@@ -1,7 +1,6 @@
 
 type Result<T> = { value: T; success: true } | { value: unknown; success: false };
 
-
 /**
  * Try catch wrapper for async functions
  */

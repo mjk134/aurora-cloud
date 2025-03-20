@@ -3,7 +3,7 @@ import { getUserFromSession } from "../../../lib/session";
 import database from "../../../lib/database";
 import FileTypeBarChart from "../../../components/analysis/file-type-bar-chart";
 import FileSizeBarChart from "../../../components/analysis/file-size-bar-chart";
-import { getTreeMapData, getTreeMapDataTest } from "../../../lib/folder";
+import { getTreeMapData } from "../../../lib/folder";
 import FolderTreeMap from "../../../components/analysis/tree-map";
 
 export default async function Analysis() {

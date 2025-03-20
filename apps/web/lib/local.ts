@@ -20,7 +20,7 @@ export function setFolderClicked(
   folderName: string,
   folderPath: string,
 ) {
-  let folders = getTypedStorageItem("recentFolders");
+  const folders = getTypedStorageItem("recentFolders");
 
   if (!folders) {
     setTypedStorageItem("recentFolders", [
@@ -52,7 +52,7 @@ export function setFileClicked(
   fileName: string,
   folderPath: string, // Should be of the form /home/files/.../cuid#file_id
 ) {
-  let files = getTypedStorageItem("recentFiles");
+  const files = getTypedStorageItem("recentFiles");
 
   if (!files) {
     setTypedStorageItem("recentFiles", [{ fileId, fileName, folderPath }]);

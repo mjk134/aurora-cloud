@@ -85,7 +85,7 @@ export async function getUserFromSession(): Promise<Users | null> {
   // select only required fields
   const user = await db.users.findUnique({
     where: {
-      user_id: (session as Record<string, any>).userId,
+      user_id: session.userId,
     },
   });
 
@@ -100,12 +100,12 @@ export async function updateSession(): Promise<Session | null> {
   try {
     const session = JSON.parse(
       Buffer.from(token.value, "base64").toString("utf-8"),
-    );
+    ) as Session;
 
     // Update the session in the database
     await db.session.update({
       where: {
-        token: (session as Record<string, any>).id,
+        token: session.id,
       },
       data: {
         expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -113,9 +113,9 @@ export async function updateSession(): Promise<Session | null> {
     });
 
     const newSession = {
-      id: (session as Record<string, any>).id,
+      id: session.id,
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      userId: (session as Record<string, any>).userId,
+      userId: session.userId,
     };
 
     // Sign the session token
@@ -133,6 +133,7 @@ export async function updateSession(): Promise<Session | null> {
 
     return newSession;
   } catch (error) {
+    console.log(error);
     return null;
   }
 }
@@ -145,11 +146,11 @@ export async function deleteSession() {
   try {
     const session = JSON.parse(
       Buffer.from(token.value, "base64").toString("utf-8"),
-    );
+    ) as Session;
 
     await db.session.delete({
       where: {
-        token: (session as Record<string, any>).id,
+        token: session.id,
       },
     });
 

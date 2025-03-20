@@ -68,6 +68,7 @@ export class QueueHandler {
     // iterate over the types and see which type is processing a handler
     let queueToUse: QueueItemType | undefined;
 
+    // in case all queues are processing, add to the queue with the least amount of items
     for (const type of this.types) {
       if (type === "tt" || type === "yt") continue; // TODO: Not implemented yet
       if (!this.processing.get(type)) {
@@ -84,7 +85,15 @@ export class QueueHandler {
 
     // If the queue lengths are all the same then we can add to any queue, use the most prioritized queue
     if (!queueToUse) {
-      queueToUse = this.types[0]; //TODO: this is temproray, instead check difference between queue lengths
+      // Get queue with the least amount of items
+      const dcLength = this.queueChannels.get("dc")?.length || 0;
+      const tgLength = this.queueChannels.get("tg")?.length || 0;
+
+      if (dcLength < tgLength) {
+        queueToUse = "dc";
+      } else {
+        queueToUse = "tg";
+      }
     }
 
     if (!queueToUse) return;
@@ -101,9 +110,9 @@ export class QueueHandler {
   /**
    * Process the next item in the queue:
    * - get the next item in the queue
-   * - if the queue is empty return set processing to false
+   * - if the queue is empty return, set processing to false
    * - process the item
-   * - if the item is processed remove it from the queue
+   * - if the item is processed remove it from the queue, repeat
    */
   public async processNext(type: QueueItemType): Promise<void> {
     const queue = this.queueChannels.get(type);

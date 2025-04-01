@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "../lib/style";
 import { WebsocketEventUnion } from "@repo/types";
-import { File, Folder } from "@prisma/client";
+import { File, Folder, Prisma } from "@prisma/client";
 import { FileBox, FolderBox } from "../app/home/files/[[...dir]]/components";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -18,7 +18,16 @@ export default function FileDropzone({
   children,
 }: {
   folders: Folder[];
-  files: File[];
+  files: Prisma.FileGetPayload<{
+    select: {
+      file_id: true;
+      file_name: true;
+      file_size: true;
+      created_at: true;
+      user_id: true;
+      file_type: true;
+    };
+  }>[];
   className?: string;
   userId: string;
   deleteFile: (fileId: string, path: string) => Promise<void>;
@@ -182,7 +191,9 @@ export default function FileDropzone({
     for (const file of files) {
       // Check file length
       if (file.size === 0) {
-        toast.error(`File ${file.name} is empty! This service only supports files with content.`);
+        toast.error(
+          `File ${file.name} is empty! This service only supports files with content.`,
+        );
         continue;
       }
 

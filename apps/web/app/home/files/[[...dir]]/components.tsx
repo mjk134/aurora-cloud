@@ -1,6 +1,6 @@
 "use client";
 
-import { File, Folder } from "@prisma/client";
+import { File, Folder, Prisma } from "@prisma/client";
 import {
   FileArchive,
   FileIcon,
@@ -19,9 +19,18 @@ import { setFileClicked, setFolderClicked } from "../../../../lib/local";
 export function FileBox({
   file,
   deleteFile,
-  customFolderLink
+  customFolderLink,
 }: {
-  file: File;
+  file: Prisma.FileGetPayload<{
+    select: {
+      file_id: true;
+      file_name: true;
+      file_size: true;
+      created_at: true;
+      user_id: true;
+      file_type: true;
+    };
+  }>;
   deleteFile: (fileId: string, path: string) => Promise<void>;
   customFolderLink?: string;
 }) {
@@ -63,7 +72,11 @@ export function FileBox({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           onDoubleClick={() => {
-            setFileClicked(file.file_id, file.file_name, customFolderLink ? customFolderLink : pathname);
+            setFileClicked(
+              file.file_id,
+              file.file_name,
+              customFolderLink ? customFolderLink : pathname,
+            );
             setContextMenuOpen(true);
           }}
           className="flex relative flex-col gap-1 h-[150px] w-[150px] md:h-[200px] md:w-[200px] lg:h-[240px] lg:w-[240px] justify-center text-center p-2 items-center border border-solid font-light text-sm border-gray-600 rounded-lg"
@@ -153,7 +166,11 @@ export function FolderBox({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             onClick={() => {
-              setFolderClicked(folder.folder_id, folder.name, customLink ? customLink : `${pathname}/${folder.folder_id}`);
+              setFolderClicked(
+                folder.folder_id,
+                folder.name,
+                customLink ? customLink : `${pathname}/${folder.folder_id}`,
+              );
               router.push(
                 customLink ? customLink : `${pathname}/${folder.folder_id}`,
               );

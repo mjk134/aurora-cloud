@@ -29,7 +29,7 @@ const download: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
     let buf: Buffer | undefined;
     let stream: Readable | undefined;
-    request.log.info(`Is not longer than 15MB: ${BigInt(data.file_length as bigint) < BigInt(15728640)}`)
+    request.log.info(`Is less than 15MB: ${BigInt(data.file_length as bigint) < BigInt(15728640)}`)
 
     if (BigInt(data.file_length as bigint) < BigInt(15728640)) {
       let buffer;

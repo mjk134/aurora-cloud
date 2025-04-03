@@ -6,6 +6,7 @@ import RecentFiles from "../../components/recent-files";
 import database from "../../lib/database";
 import { getUserFromSession } from "../../lib/session";
 import { deleteFile } from "./files/[[...dir]]/actions";
+import Link from "next/link";
 
 export default async function Home() {
   return (
@@ -16,7 +17,7 @@ export default async function Home() {
             Welcome to Aurora Cloud
           </h1>
           <p className="pb-2 text-md ">
-            Begin looking find your files using the search bar below.
+            Begin looking find your files using the search bar below. To upload files navigate to the <Link href="/home/files" className="blue underline">files</Link> page.
           </p>
         </div>
         <div className="w-full px-24">

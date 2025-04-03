@@ -138,6 +138,14 @@ export default async function Files({
       },
       user_id: user.user_id,
     },
+    select: {
+      file_id: true,
+      file_name: true,
+      file_size: true,
+      created_at: true,
+      user_id: true,
+      file_type: true,
+    }
   });
 
   // Query folder table to see what folders are in the parent folder

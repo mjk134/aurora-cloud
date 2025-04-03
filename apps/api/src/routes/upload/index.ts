@@ -7,7 +7,7 @@ import UserQueueHandler, { Handler, QueueHandler } from "../../handlers/queues.j
 const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.register(import('@fastify/multipart'), {
     limits: {
-      fileSize: Infinity // To allow large file uploads, but for even larger files it should be streamed
+      fileSize: 64000000 // To allow large file uploads, but for even larger files it should be streamed
     }
   })
 

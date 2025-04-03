@@ -26,11 +26,18 @@ export default async function Home() {
       <div className="grid grid-cols-2 grid-rows-1 row-span-2 h-full w-full">
         <div className="flex flex-col gap-3">
           <div className="text-2xl font-semibold">Recent files</div>
-          <RecentFiles className="grid grid-cols-2 grid-rows-auto" deleteFile={deleteFile} />
+          <RecentFiles
+            className="grid grid-cols-2 grid-rows-auto"
+            deleteFile={deleteFile}
+          />
         </div>
         <div className="flex flex-col gap-3">
           <div className="text-2xl font-semibold">Analysis</div>
-          <Suspense fallback={<div className="animate-pulse h-full w-full rounded bg-gray-100"></div>}>
+          <Suspense
+            fallback={
+              <div className="animate-pulse h-full w-full rounded bg-gray-100"></div>
+            }
+          >
             <Analysis />
           </Suspense>
         </div>
@@ -76,16 +83,26 @@ async function Analysis() {
     take: 8,
   });
 
+  const nothingToAnalyse = types.length === 0 && fileSizes.length === 0;
+
   return (
     <div className="flex flex-col overflow-scroll">
-      <div className="flex flex-col justify-center items-center">
-        <div className="text-xl font-medium mt-3 pb-4">File Sizes (top 10)</div>
-        <FileSizeBarChart fileSizes={fileSizes} />
-      </div>
-      <div className="flex flex-col justify-center items-center">
-        <div className="text-xl font-medium mt-3 pb-4">File types</div>
-        <FileTypeBarChart fileTypes={types.splice(0, 8)} />
-      </div>
+      {nothingToAnalyse ? (
+        <p className="text-gray-500 text-lg">No files to analyse. Begin uploading to see your analysis.</p>
+      ) : (
+        <>
+          <div className="flex flex-col justify-center items-center">
+            <div className="text-xl font-medium mt-3 pb-4">
+              File Sizes (top 10)
+            </div>
+            <FileSizeBarChart fileSizes={fileSizes} />
+          </div>
+          <div className="flex flex-col justify-center items-center">
+            <div className="text-xl font-medium mt-3 pb-4">File types</div>
+            <FileTypeBarChart fileTypes={types.splice(0, 8)} />
+          </div>
+        </>
+      )}
     </div>
   );
 }

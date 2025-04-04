@@ -48,7 +48,7 @@ export async function deleteFile(fileId: string, pathname: string) {
     where: {
       file_id: fileId,
       user_id: user?.user_id,
-    }
+    },
   });
 
   if (!dbFile) return;
@@ -146,7 +146,10 @@ export async function deleteFolder(folderId: string, pathname: string) {
   revalidatePath(pathname); // revalidate folder path
 }
 
-export async function getAllSubFileIds(folderId: string, userId: string): Promise<[string[], string[]]> {
+export async function getAllSubFileIds(
+  folderId: string,
+  userId: string,
+): Promise<[string[], string[]]> {
   const filesFolders = await database.parent.findMany({
     where: {
       folder_id: folderId,
@@ -163,8 +166,8 @@ export async function getAllSubFileIds(folderId: string, userId: string): Promis
         in: filesFolders.map((ff) => ff.file_id),
       },
       user_id: userId,
-    }
-  })
+    },
+  });
 
   const folders = await database.folder.findMany({
     select: {
@@ -175,22 +178,30 @@ export async function getAllSubFileIds(folderId: string, userId: string): Promis
         in: filesFolders.map((ff) => ff.file_id),
       },
       user_id: userId,
-    }
-  })
+    },
+  });
 
- // Perhaps computationally expensive - maybe turn it into one query (if possible)
-  const data = await Promise.all(folders.map(async (f) => {
-    return await getAllSubFileIds(f.folder_id, userId);
-  }));
+  // Perhaps computationally expensive - maybe turn it into one query (if possible)
+  const data = await Promise.all(
+    folders.map(async (f) => {
+      return await getAllSubFileIds(f.folder_id, userId);
+    }),
+  );
 
-  const allFiles = files.map((f) => f.file_id).concat(data.map((d) => d[0]).flat());
-  const allFolders = folders.map((f) => f.folder_id).concat(data.map((d) => d[1]).flat());
-  
+  const allFiles = files
+    .map((f) => f.file_id)
+    .concat(data.map((d) => d[0]).flat());
+  const allFolders = folders
+    .map((f) => f.folder_id)
+    .concat(data.map((d) => d[1]).flat());
+
   return [allFiles, allFolders];
 }
 
 // TODO: optimise this using count query
-export async function getSubFilesCount(folderId: string): Promise<[number, number]> {
+export async function getSubFilesCount(
+  folderId: string,
+): Promise<[number, number]> {
   const user = await getUserFromSession();
 
   if (!user) return [0, 0];

@@ -29,7 +29,8 @@
     "fastify-cli": "^6.1.0",
     "fastify-plugin": "^4.0.0",
     "fluent-ffmpeg": "^2.1.3",
-    "jimp": "^1.6.0"
+    "jimp": "^1.6.0",
+    "@repo/util": "workspace:*"
   },
   "devDependencies": {
     "@repo/types": "workspace:*",

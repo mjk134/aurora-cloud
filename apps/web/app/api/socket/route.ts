@@ -1,3 +1,5 @@
+import { tryCatchSync } from "@repo/util";
+
 // Store the client and user id in a map to keep track of the clients connected to the server
 export const clientUserMap = new Map<string, import("ws").WebSocket>();
 
@@ -17,6 +19,11 @@ function timeout(
   });
 }
 
+type WebsocketInitEventData = {
+  server_id?: string;
+  user_id?: string;
+};
+
 export async function SOCKET(
   client: import("ws").WebSocket,
   request: import("http").IncomingMessage,
@@ -29,19 +36,38 @@ export async function SOCKET(
     return client.close();
   }
 
-  const data = JSON.parse(
-    Buffer.from(message.toString(), "base64").toString("utf-8"),
-  ) as {
-    server_id?: string;
-    user_id?: string;
-  };
+  // Try catch just in case the message is not valid JSON
+  const result = tryCatchSync<WebsocketInitEventData>(() => {
+    const data = JSON.parse(
+      Buffer.from(message.toString(), "base64").toString("utf-8"),
+    ) as WebsocketInitEventData;
+    // Just in case if nothing is sent over
+    if (!data) {
+      throw new Error("Invalid data");
+    }
+    // Check if data has the correct keys, since we know its not nothing and some sort of JSON
+    if (!data.server_id && !data.user_id) {
+      throw new Error("Invalid data");
+    }
+    return data;
+  });
+
+  if (!result.success) {
+    console.log("Error parsing init message. Closing connection.");
+    return client.close();
+  }
+
+  const data = result.value;
 
   if (data.server_id) {
     // the key doesn't really matter, it's just a way to identify the server the data being sent over is already visible to the client either way it just forces the website to refresh
     if (data.server_id === "server") {
       console.log("Server connected + authed, ready to receive messages.");
       client.on("message", (message) => {
-        console.log("Received message from client:", Buffer.from(message.toString()).toString());
+        console.log(
+          "Received message from client:",
+          Buffer.from(message.toString()).toString(),
+        );
         const jsonData = JSON.parse(message.toString());
         const userClient = clientUserMap.get(jsonData.user_id);
         if (userClient) {

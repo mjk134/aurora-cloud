@@ -8,8 +8,8 @@ import CacheManager from "../../handlers/cache.js";
 const download: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.get("/", async function (request, reply) {
     const { chunks } = request.query as { chunks: string };
-    // function directly prodvided by MDN
-    const reviver = (key: string, value: any) =>
+    // function as described by MDN
+    const reviver = (key: string, value: unknown) =>
       value !== null &&
       typeof value === "object" &&
       "$bigint" in value &&

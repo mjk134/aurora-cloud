@@ -37,3 +37,10 @@ export type QueueItem = {
   type: QueueItemType;
   handler: Handler;
 };
+export type EncrytedFileCacheInfo = {
+  fileId: string;
+  key: Buffer;
+  iv: Buffer;
+  tag: Buffer;
+  length: number;
+};

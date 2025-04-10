@@ -32,6 +32,9 @@ importers:
       '@fastify/websocket':
         specifier: ^11.0.2
         version: 11.0.2(bufferutil@4.0.9)(utf-8-validate@6.0.5)
+      '@repo/util':
+        specifier: workspace:*
+        version: link:../../packages/util
       '@types/fluent-ffmpeg':
         specifier: ^2.1.27
         version: 2.1.27
@@ -90,6 +93,9 @@ importers:
       '@prisma/client':
         specifier: 6.5.0
         version: 6.5.0(prisma@6.5.0(typescript@5.3.3))(typescript@5.3.3)
+      '@repo/util':
+        specifier: workspace:*
+        version: link:../../packages/util
       '@tailwindcss/postcss':
         specifier: ^4.0.14
         version: 4.0.14
@@ -236,6 +242,8 @@ importers:
   packages/types: {}
 
   packages/typescript-config: {}
+
+  packages/util: {}
 
 packages:
 

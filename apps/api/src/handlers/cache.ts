@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { Readable } from "stream";
 import { encryptFileStream } from "./encryption";
 import fs, { WriteStream } from "fs";
+import { EncrytedFileCacheInfo } from "./types";
 
 export default class CacheManager {
   public async removeFileFromCache(fileId: string) {
@@ -33,13 +34,7 @@ export default class CacheManager {
     readable,
   }: {
     readable: Readable;
-  }): Promise<{
-    fileId: string;
-    key: Buffer;
-    iv: Buffer;
-    tag: Buffer;
-    length: number;
-  }> {
+  }): Promise<EncrytedFileCacheInfo> {
     const fileId = randomUUID();
     const writeStream = fs.createWriteStream("../cache/" + fileId, {
       flags: "a",

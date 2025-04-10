@@ -15,6 +15,16 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { deleteFolder, getSubFilesCount } from "./actions";
 import { setFileClicked, setFolderClicked } from "../../../../lib/local";
+import { toast } from "sonner";
+
+const textFileTypes = [
+  "text/plain",
+  "text/html",
+  "text/css",
+  "text/javascript",
+  "text/xml",
+  "application/json",
+];
 
 export function FileBox({
   file,
@@ -36,7 +46,8 @@ export function FileBox({
 }) {
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
-  const [, setContextMenuOpen] = React.useState(false);
+  const [isContextMenuOpen, setContextMenuOpen] = React.useState(false);
+  const isPreviewable = textFileTypes.includes(file.file_type) || file.file_type.includes("image");
   const getFileIcon = useCallback(() => {
     if (file.file_type.includes("image")) {
       return <FileImage size={64} strokeWidth={1} />;
@@ -64,9 +75,23 @@ export function FileBox({
     window.URL.revokeObjectURL(url);
   }, []);
 
+  const handlePreview = useCallback(() => {
+    if (isPreviewable) {
+      const previewWindow = window.open(
+        `/api/download/${file.file_id}?preview=true`,
+        "_blank",
+      );
+      if (!previewWindow) {
+        alert("Please allow popups for this website");
+      }
+    } else {
+      handleDownload();
+    }
+  }, [isPreviewable, handleDownload]);
+
   return (
     <ContextMenu.Root onOpenChange={setContextMenuOpen}>
-      <ContextMenu.Trigger asChild>
+      <ContextMenu.Trigger data-state={isContextMenuOpen ? "open" : "closed"} asChild>
         <motion.div
           id={file.file_id}
           initial={{ opacity: 0 }}
@@ -77,7 +102,8 @@ export function FileBox({
               file.file_name,
               customFolderLink ? customFolderLink : pathname,
             );
-            setContextMenuOpen(true);
+            handlePreview();
+            toast.warning("No preview available for this file type, downloading instead.")
           }}
           className="flex relative flex-col gap-1 h-[150px] w-[150px] md:h-[200px] md:w-[200px] lg:h-[240px] lg:w-[240px] justify-center text-center p-2 items-center border border-solid font-light text-sm border-gray-600 rounded-lg"
         >
@@ -96,7 +122,7 @@ export function FileBox({
         </motion.div>
       </ContextMenu.Trigger>
       <ContextMenu.Portal>
-        <ContextMenu.Content asChild>
+        <ContextMenu.Content data-state={isContextMenuOpen ? "open" : "closed"} asChild>
           <motion.div
             animate={{ scale: 1 }}
             initial={{ scale: 0.5 }}

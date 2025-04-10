@@ -9,6 +9,8 @@ export async function GET(
   { params }: { params: Promise<{ fileId: string }> },
 ) {
   const { fileId } = await params;
+  const searchParams = req.nextUrl.searchParams;
+  const preview = searchParams.get("preview") === "true" ? true : false;
 
   if (!fileId) {
     return NextResponse.json({
@@ -124,15 +126,17 @@ export async function GET(
   headers.set("Content-Disposition", `filename=${dbFile.file_name};`);
   const stream = res.body as ReadableStream<Uint8Array>;
 
-  // this is just to display the file in the browser, perhaps for user avatar
-  // headers.set('Content-Type', dbFile.file_type);
-
   if (
     !res.body ||
     !res.headers.get("content-type") ||
     !res.headers.get("content-disposition")
   ) {
     return new NextResponse(null, { status: 404 });
+  }
+
+  // this is just to display the file in the browser, perhaps for user avatar
+  if (preview) {
+    headers.set('Content-Type', dbFile.file_type);
   }
 
   // Takes 412904.13469999935 milliseconds to download a 2.3GB file

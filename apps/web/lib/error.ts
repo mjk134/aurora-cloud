@@ -1,19 +1,19 @@
 
-type Result<T> = { value: T; success: true } | { value: unknown; success: false };
+type Result<T, E> = { value: T; success: true } | { value: E; success: false };
 
 /**
  * Try catch wrapper for async functions
  */
-export async function tryCatch<T>(fn: () => Promise<T>): Promise<Result<T>> {
+export async function tryCatch<T, E>(promise: Promise<T>): Promise<Result<T, E>> {
   try {
     return {
-      value: await fn(),
+      value: await promise,
       success: true,
     }
   } catch (error) {
-    console.warn(error);
+    console.warn("An error occured: ", error);
     return {
-      value: error,
+      value: error as E,
       success: false,
     }
   }

@@ -1,9 +1,6 @@
 export * from "./discord";
 export * from "./webhook"
 
-// Type abastraction for easy reading
-export type FileID = string;
-
 // This is the response from the API when a file is uploaded
 export interface UploadResponse {
     error?: boolean;

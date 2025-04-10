@@ -3,7 +3,7 @@ import { useLayoutEffect, useRef } from "react";
 import Image from "next/image";
 
 //
-// Initialize a shader program, so WebGL knows how to draw our data
+// Initialize a shader program, so WebGL knows how to draw our data - Mostly from MDN documentation
 //
 function initShaderProgram(
   gl: WebGL2RenderingContext,

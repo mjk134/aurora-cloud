@@ -49,6 +49,7 @@ export default function Sidebar({
   logout: () => void;
   rootFolderId: string;
 }) {
+  'use client'
   const pathname = usePathname();
   const folders = getTypedStorageItem("recentFolders");
   const routes: Route[] = [
@@ -92,7 +93,6 @@ export default function Sidebar({
           src="/logo.svg"
           width={300}
           height={300}
-          // className="absolute top-0 left-0 -z-20 object-cover"
         />
 
         <h1 className="font-semibold">Main</h1>

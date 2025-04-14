@@ -1,13 +1,13 @@
 import { tryCatchSync } from "@repo/util";
-
-// Store the client and user id in a map to keep track of the clients connected to the server
-export const clientUserMap = new Map<string, import("ws").WebSocket>();
+import clientUserMap from "../../../lib/user-map";
+import type { IncomingMessage } from "http";
+import type { WebSocketServer, WebSocket } from "ws";
 
 // Promisified timeout function for initial message recieved from server
 function timeout(
   ms: number,
-  client: import("ws").WebSocket,
-): Promise<null | import("ws").WebSocket.RawData> {
+  client: WebSocket,
+): Promise<null | WebSocket.RawData> {
   return new Promise((resolve) => {
     client.once("message", (message) => {
       resolve(message);
@@ -25,9 +25,9 @@ type WebsocketInitEventData = {
 };
 
 export async function SOCKET(
-  client: import("ws").WebSocket,
-  request: import("http").IncomingMessage,
-  server: import("ws").WebSocketServer,
+  client: WebSocket,
+  request: IncomingMessage,
+  server: WebSocketServer,
 ) {
   const message = await timeout(5000, client);
 
@@ -65,8 +65,8 @@ export async function SOCKET(
       console.log("Server connected + authed, ready to receive messages.");
       client.on("message", (message) => {
         console.log(
-          "Received message from client:",
-          Buffer.from(message.toString()).toString(),
+          "Received message from server for client:",
+          JSON.parse(message.toString()),
         );
         const jsonData = JSON.parse(message.toString());
         const userClient = clientUserMap.get(jsonData.user_id);

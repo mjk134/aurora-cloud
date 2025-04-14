@@ -129,11 +129,7 @@ export default function FileDropzone({
 
           // Remove the file from the pending files
           setFiles(pendingFiles.filter((file) => file.fileId !== data.fileId));
-          setTimeout(() => {
-            // Wait for webhooks to update the file list
-            router.refresh();
-          }, 2000);
-
+          router.refresh();
           break;
       }
     },
@@ -152,7 +148,7 @@ export default function FileDropzone({
     };
     websocket.onmessage = (message) => {
       const data = JSON.parse(
-        Buffer.from(JSON.parse(message.data).data, "base64").toString("utf-8"),
+        Buffer.from(JSON.parse(message.data).data).toString(),
       ) as WebsocketEventUnion | undefined;
       if (!data) return;
       updateFiles(data);

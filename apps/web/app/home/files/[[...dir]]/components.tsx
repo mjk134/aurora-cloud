@@ -16,6 +16,7 @@ import { motion } from "motion/react";
 import { deleteFolder, getSubFilesCount } from "./actions";
 import { setFileClicked, setFolderClicked } from "../../../../lib/local";
 import { toast } from "sonner";
+import { tryCatch } from "@repo/util";
 
 const textFileTypes = [
   "text/plain",
@@ -63,7 +64,18 @@ export function FileBox({
   }, [file.file_type]);
 
   const handleDownload = useCallback(async () => {
-    const res = await fetch("/api/download/" + file.file_id);
+    if (isPending) return;
+    const result = await tryCatch<Response>(fetch("/api/download/" + file.file_id))
+    if (!result.success) {
+      toast.error("Failed to download file. Please try again.");
+      return;
+    }
+    // Separate the actual error handling from the request
+    if (!result.value.ok) {
+      toast.error("Failed to download file. Please try again.");
+      return;
+    }
+    const res = result.value;
     const blob = await res.blob();
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");

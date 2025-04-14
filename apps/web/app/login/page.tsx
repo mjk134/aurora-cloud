@@ -1,6 +1,5 @@
 import LoginForm from "../../components/forms/login-form";
 import GradientBackground from "../../components/gradient-background";
-import Input from "../../components/ui/input";
 import { loginAction } from "./actions";
 
 export default function Login() {

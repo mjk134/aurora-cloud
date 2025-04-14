@@ -17,7 +17,12 @@ export default async function Home() {
             Welcome to Aurora Cloud
           </h1>
           <p className="pb-2 text-md ">
-            Begin looking find your files using the search bar below. To upload files navigate to the <Link href="/home/files" className="blue underline">files</Link> page.
+            Begin looking find your files using the search bar below. To upload
+            files navigate to the{" "}
+            <Link href="/home/files" className="blue underline">
+              files
+            </Link>{" "}
+            page.
           </p>
         </div>
         <div className="w-full px-24">
@@ -71,8 +76,11 @@ async function Analysis() {
     if (index === -1) {
       types.push({ type, count: 1 });
     } else {
-      if (types[index]?.count) {
-        types[index].count += 1;
+      const typeItem = types[index];
+      if (typeItem) {
+        if (typeItem.count) {
+          typeItem.count += 1;
+        }
       }
     }
   });
@@ -89,7 +97,9 @@ async function Analysis() {
   return (
     <div className="flex flex-col overflow-scroll">
       {nothingToAnalyse ? (
-        <p className="text-gray-500 text-lg">No files to analyse. Begin uploading to see your analysis.</p>
+        <p className="text-gray-500 text-lg">
+          No files to analyse. Begin uploading to see your analysis.
+        </p>
       ) : (
         <>
           <div className="flex flex-col justify-center items-center">

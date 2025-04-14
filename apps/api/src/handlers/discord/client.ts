@@ -144,14 +144,6 @@ export class Client {
         } as WebsocketChunkEvent),
       );
     }
-    eventEmitter.emit(
-      "message",
-      JSON.stringify({
-        event: "complete",
-        fileId: tempFileId,
-        user_id: userId,
-      } as WebsocketCompleteEvent),
-    );
     return {
       chunks: attachments.map((a) => {
         return {
@@ -217,14 +209,6 @@ export class Client {
       chunkCount++;
     }
 
-    eventEmitter.emit(
-      "message",
-      JSON.stringify({
-        event: "complete",
-        fileId: tempFileId,
-        user_id: userId,
-      } as WebsocketCompleteEvent),
-    );
 
     return {
       chunks: attachments.map((a) => {

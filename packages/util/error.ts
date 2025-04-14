@@ -1,3 +1,4 @@
+// Represents a type with success and error values
 type Result<T, E> = { value: T; success: true } | { value: E; success: false };
 
 /**

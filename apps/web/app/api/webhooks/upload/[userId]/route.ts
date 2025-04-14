@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import database from "../../../../../lib/database";
-import { WebhookUploadActionUnion } from "@repo/types";
+import { WebhookUploadActionUnion, WebsocketCompleteEvent } from "@repo/types";
+import clientUserMap from "../../../../../lib/user-map";
 
 // Tokenate this so that this route cannot be exploited
 export async function POST(
@@ -9,17 +10,27 @@ export async function POST(
 ) {
   const { userId } = await params;
   const searchParams = req.nextUrl.searchParams;
+
+  const tempFileId = searchParams.get("tempFileId");
+
   // Error handling
+  const err = searchParams.get('err') as 'true' | 'false' | null;
 
-  // const err = searchParams.get('err') as 'true' | 'false' | null;
+  if (!err) {
+      return NextResponse.json({
+          success: false,
+          message: "An error occured while uploading the file.",
+          error: "No type found."
+      })
+  }
 
-  // if (!err) {
-  //     return NextResponse.json({
-  //         success: false,
-  //         message: "An error occured while uploading the file.",
-  //         error: "No type found."
-  //     })
-  // }
+  if (err === "true") {
+    return NextResponse.json({
+      success: false,
+      message: "An error occured while uploading the file.",
+      error: "Error param found.",
+    });
+  }
 
   const body = await req.json();
   const file = body.file as {
@@ -119,6 +130,21 @@ export async function POST(
         tgIndex++;
       }
       break;
+  }
+
+  const userSocket = clientUserMap.get(user.user_id);
+
+  if (userSocket) {
+    // Only send if user socket exists, if not - it doesn't matter
+    userSocket.send(
+      JSON.stringify(Buffer.from(
+        JSON.stringify({
+          event: "complete",
+          fileId: tempFileId,
+          user_id: userId,
+        } as WebsocketCompleteEvent)
+      ))
+    );
   }
   
   return NextResponse.json({

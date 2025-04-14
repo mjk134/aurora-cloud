@@ -122,6 +122,11 @@ export async function GET(
       headersTimeout: 2147483647, // 32 bit signed integer max value
     })
   });
+
+  if (!res.ok) {
+    return new NextResponse(null, { status: 500 });
+  }
+
   const headers = new Headers(res.headers);
   headers.set("Content-Disposition", `filename=${dbFile.file_name};`);
   const stream = res.body as ReadableStream<Uint8Array>;

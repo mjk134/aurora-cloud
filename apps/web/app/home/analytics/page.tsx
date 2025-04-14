@@ -36,8 +36,11 @@ export default async function Analysis() {
     if (index === -1) {
       types.push({ type, count: 1 });
     } else {
-      if (types[index]?.count) {
-        types[index].count += 1;
+      const typeItem = types[index];
+      if (typeItem) {
+        if (typeItem.count) {
+          typeItem.count += 1;
+        }
       }
     }
   });
@@ -72,7 +75,9 @@ export default async function Analysis() {
           <FileTypeBarChart fileTypes={types.splice(0, 8)} />
         </div>
         <div className="flex flex-col justify-center items-center">
-          <div className="text-xl font-medium mt-3 pb-4">File Sizes (top 10)</div>
+          <div className="text-xl font-medium mt-3 pb-4">
+            File Sizes (top 10)
+          </div>
           <FileSizeBarChart fileSizes={fileSizes} />
         </div>
         <div className="flex flex-col justify-center items-center">

@@ -4,7 +4,6 @@ import { EventEmitter } from "node:stream";
 import { BlobPart } from "../discord/types";
 import {
   WebsocketChunkEvent,
-  WebsocketCompleteEvent,
   WebsocketInitEvent,
 } from "@repo/types";
 import CacheManager from "../cache";
@@ -141,14 +140,6 @@ export class TelegramClient {
         } as WebsocketChunkEvent),
       );
     }
-    eventEmitter.emit(
-      "message",
-      JSON.stringify({
-        event: "complete",
-        fileId: tempFileId,
-        user_id: userId,
-      } as WebsocketCompleteEvent),
-    );
     return messages.map((m) => {
       return {
         file_id: m,
@@ -215,14 +206,6 @@ export class TelegramClient {
       i++;
     }
 
-    eventEmitter.emit(
-      "message",
-      JSON.stringify({
-        event: "complete",
-        fileId: tempFileId,
-        user_id: userId,
-      } as WebsocketCompleteEvent),
-    );
     return messages.map((m) => {
       return {
         file_id: m,

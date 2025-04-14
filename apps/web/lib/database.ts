@@ -6,7 +6,7 @@ const prismaClientSingleton = () => {
   const connectionString = `${process.env.POSTGRES_PRISMA_URL}`;
   const pool = new Pool({ connectionString });
   const adapter = new PrismaNeon(pool);
-  return new PrismaClient({ adapter, log: ['query'] }); //, log: ['query']
+  return new PrismaClient({ adapter }); //, log: ['query']
 };
 
 declare const globalThis: {

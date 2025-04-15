@@ -2,12 +2,13 @@ import { createDecipheriv, randomUUID } from "node:crypto";
 import { REST } from "../rest";
 import { EventEmitter } from "node:stream";
 import { BlobPart } from "../discord/types";
-import {
-  WebsocketChunkEvent,
-  WebsocketInitEvent,
-} from "@repo/types";
+import { WebsocketChunkEvent, WebsocketInitEvent } from "@repo/types";
 import CacheManager from "../cache";
 import { ReadStream } from "node:fs";
+
+export type TelegramResponse = {
+  file_id: string;
+}[];
 
 export class TelegramClient {
   private _token: string;
@@ -87,11 +88,7 @@ export class TelegramClient {
     eventEmitter: EventEmitter;
     tempFileId: string;
     userId: string;
-  }): Promise<
-    {
-      file_id: string;
-    }[]
-  > {
+  }): Promise<TelegramResponse> {
     const fileId = randomUUID();
     const chunks = this.chunkFile(fileBuffer);
     eventEmitter.emit(
@@ -159,11 +156,7 @@ export class TelegramClient {
     tempFileId: string;
     userId: string;
     fileId: string;
-  }): Promise<
-    {
-      file_id: string;
-    }[]
-  > {
+  }): Promise<TelegramResponse> {
     const cacheManager = CacheManager.getInstance();
     const readStream = cacheManager.getFileReadStreamFromCache(
       fileId,
@@ -273,19 +266,19 @@ export class TelegramClient {
     filename,
     key,
     iv,
-    tag
+    tag,
   }: {
     fileIds: string[];
     eventEmitter: EventEmitter;
     userId: string;
     fileId: string;
     filename: string;
-    key: Uint8Array,
-    iv: Uint8Array,
-    tag: Uint8Array,
+    key: Uint8Array;
+    iv: Uint8Array;
+    tag: Uint8Array;
   }): Promise<ReadStream> {
-    const cacheManager = CacheManager.getInstance()
-    const writeStream = cacheManager.createFileWriteStreamToCache(fileId)
+    const cacheManager = CacheManager.getInstance();
+    const writeStream = cacheManager.createFileWriteStreamToCache(fileId);
     eventEmitter.emit(
       "message",
       JSON.stringify({
@@ -329,9 +322,8 @@ export class TelegramClient {
     }
     decipher.final();
     writeStream.close();
-    return cacheManager.getFileReadStreamFromCache(fileId)
+    return cacheManager.getFileReadStreamFromCache(fileId);
   }
-
 
   public async sendMessage({
     chatId = this.DEFAULT_CHAT_ID,

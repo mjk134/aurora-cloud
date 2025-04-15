@@ -4,9 +4,9 @@
  */
 import type { BinaryLike } from "crypto";
 
-export type BlobPart = Blob | BinaryLike;
+export type BlobPart = Blob | BinaryLike; // This type was missing so added it here
 
-// Return type from discord?
+// Return type from discord
 export type Message = {
   content: string;
   [key: `files[${number}]`]: string;
@@ -14,7 +14,7 @@ export type Message = {
   attachments: Record<string, string>[];
 };
 
-// Returned from Discord?
+// Returned from Discord
 export type Attachment = {
   id: string;
   filename: string;

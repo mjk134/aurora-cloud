@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
   // Return success response
   return NextResponse.json({
     success: true,
-    message: "File uploaded.",
+    message: "File uploaded to fastify.",
     error: null,
   });
 }

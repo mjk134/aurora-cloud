@@ -12,6 +12,7 @@ import { REST } from "./rest";
 import { socketEventEmitter } from "../app";
 import CacheManager from "./cache";
 import { tryCatch } from "@repo/util";
+import { TelegramResponse } from "./telegram/client";
 
 /**
  * This class is used to handle the queue for each user.
@@ -231,7 +232,7 @@ export class Handler {
         break;
       case "tg":
         // upload to telegram
-        const tgResult = await tryCatch<TelegramWebhookUploadAction["chunks"]>(
+        const tgResult = await tryCatch<TelegramResponse>(
           (async () => {
             if (fileLength > 15 * 1024 * 1024) {
               return await tgClient.uploadStreamedFile({

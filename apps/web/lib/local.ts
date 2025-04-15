@@ -11,6 +11,7 @@ export function setTypedStorageItem<T extends keyof LocalStorageSchema>(
 export function getTypedStorageItem<T extends keyof LocalStorageSchema>(
   key: T,
 ): LocalStorageSchema[T] | null {
+  if (typeof window === "undefined") return null;
   const item = window.localStorage.getItem(key);
   return !item ? null : (JSON.parse(item) as LocalStorageSchema[T]);
 }

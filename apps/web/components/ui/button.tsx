@@ -1,3 +1,5 @@
+'use client'
+
 import { cn } from "../../lib/style";
 
 type ButtonVariant = "primary" | "outline" | "unselected" | "danger";
@@ -25,6 +27,7 @@ const Button = ({
   className = "",
   ...props
 }: ButtonProps) => {
+  'use client'
   return (
     <button
       className={cn(

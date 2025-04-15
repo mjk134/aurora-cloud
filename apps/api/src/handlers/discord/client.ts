@@ -34,6 +34,9 @@ export class Client {
     return this._token;
   }
 
+  /**
+   * This uploads a single chunk to discord.
+   */
   private async uploadChunk({
     channelId,
     chunkId,
@@ -65,6 +68,9 @@ export class Client {
     return attachment as Attachment;
   }
 
+  /**
+   * Chunks the file into 10MB (up to the limit) chunks.
+   */
   private chunkFile(file: Buffer): Buffer[] {
     const chunkSize = 10 * 1024 * 1024;
     const maxChunks = Math.ceil(file.length / chunkSize);
@@ -72,7 +78,8 @@ export class Client {
     for (let i = 0; i < maxChunks; i++) {
       const start = i * chunkSize;
       const end = (i + 1) * chunkSize;
-      chunks.push(file.slice(start, end));
+      // Slicing is deprecated
+      chunks.push(file.subarray(start, end));
     }
     return chunks;
   }

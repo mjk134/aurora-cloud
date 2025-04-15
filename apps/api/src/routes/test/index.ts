@@ -1,7 +1,7 @@
 import { FastifyPluginAsync } from "fastify"
 import { tgClient } from "../../app"
 
-const users: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
+const test: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.get('/', async function (request, reply) {
     const path = await tgClient.getFile({ fileId: 'BQACAgQAAxkDAAM3Z8l4s5o1k2DTRVv1sCljeAABD4TuAAIpFgACPitRUhXnnB6qMJQFNgQ' })
     
@@ -11,13 +11,11 @@ const users: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
     const buffer = await tgClient.downloadFileChunk({ filePath: path })
 
-    reply.header('Content-Disposition', `filename=something.pdf;`);
+    reply.header('Content-Disposition', `filename=test.pdf;`);
     reply.header('Content-Type', 'application/pdf');
 
     return buffer
-    
-    return 'this is an user endpoint'
   })
 }
 
-export default users;
+export default test;

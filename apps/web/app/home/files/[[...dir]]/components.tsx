@@ -48,7 +48,8 @@ export function FileBox({
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
   const [isContextMenuOpen, setContextMenuOpen] = React.useState(false);
-  const isPreviewable = textFileTypes.includes(file.file_type) || file.file_type.includes("image");
+  const isPreviewable =
+    textFileTypes.includes(file.file_type) || file.file_type.includes("image");
   const getFileIcon = useCallback(() => {
     if (file.file_type.includes("image")) {
       return <FileImage size={64} strokeWidth={1} />;
@@ -65,7 +66,9 @@ export function FileBox({
 
   const handleDownload = useCallback(async () => {
     if (isPending) return;
-    const result = await tryCatch<Response>(fetch("/api/download/" + file.file_id))
+    const result = await tryCatch<Response>(
+      fetch("/api/download/" + file.file_id),
+    );
     if (!result.success) {
       toast.error("Failed to download file. Please try again.");
       return;
@@ -87,7 +90,7 @@ export function FileBox({
     window.URL.revokeObjectURL(url);
   }, []);
 
-  const handlePreview = useCallback(() => {
+  const handlePreview = useCallback(async () => {
     if (isPreviewable) {
       const previewWindow = window.open(
         `/api/download/${file.file_id}?preview=true`,
@@ -97,25 +100,33 @@ export function FileBox({
         alert("Please allow popups for this website");
       }
     } else {
-      handleDownload();
+      await handleDownload();
     }
   }, [isPreviewable, handleDownload]);
 
   return (
     <ContextMenu.Root onOpenChange={setContextMenuOpen}>
-      <ContextMenu.Trigger data-state={isContextMenuOpen ? "open" : "closed"} asChild>
+      <ContextMenu.Trigger
+        data-state={isContextMenuOpen ? "open" : "closed"}
+        asChild
+      >
         <motion.div
           id={file.file_id}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           onDoubleClick={() => {
+            if (isPending) return;
             setFileClicked(
               file.file_id,
               file.file_name,
               customFolderLink ? customFolderLink : pathname,
             );
-            handlePreview();
-            toast.warning("No preview available for this file type, downloading instead.")
+            startTransition(async () => {
+              await handlePreview();
+            });
+            toast.warning(
+              "No preview available for this file type, downloading instead.",
+            );
           }}
           className="flex relative flex-col gap-1 h-[150px] w-[150px] md:h-[200px] md:w-[200px] lg:h-[240px] lg:w-[240px] justify-center text-center p-2 items-center border border-solid font-light text-sm border-gray-600 rounded-lg"
         >
@@ -134,7 +145,10 @@ export function FileBox({
         </motion.div>
       </ContextMenu.Trigger>
       <ContextMenu.Portal>
-        <ContextMenu.Content data-state={isContextMenuOpen ? "open" : "closed"} asChild>
+        <ContextMenu.Content
+          data-state={isContextMenuOpen ? "open" : "closed"}
+          asChild
+        >
           <motion.div
             animate={{ scale: 1 }}
             initial={{ scale: 0.5 }}

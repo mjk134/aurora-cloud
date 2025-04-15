@@ -86,7 +86,7 @@ export async function deleteFile(fileId: string, pathname: string) {
   revalidatePath(pathname); // revalidate folder path
 }
 
-export async function deleteFolder(folderId: string, pathname: string) {
+export async function deleteFolder(folderId: string, pathname?: string, removeRoot = true) {
   const user = await getUserFromSession();
 
   if (!user) return;
@@ -137,12 +137,13 @@ export async function deleteFolder(folderId: string, pathname: string) {
   await database.folder.deleteMany({
     where: {
       folder_id: {
-        in: [...folderIds, folderId],
+        in: [...folderIds, ...[removeRoot ? folderId : []].flat()],
       },
       user_id: user.user_id,
     },
   });
 
+  if (!pathname) return;
   revalidatePath(pathname); // revalidate folder path
 }
 

@@ -24,8 +24,7 @@ export async function createSession(id: string) {
     userId: id,
   };
 
-  // TODO: Use the auth secret to encode the session token
-  // 2. Sign the session token
+  // 2. Encrypt the session token
   const token = Buffer.from(JSON.stringify(session)).toString("base64");
 
   // 3. Store the session in cookies for optimistic auth checks
@@ -70,6 +69,16 @@ export const getVerfiedSession = async () => {
       token: session.id,
     },
   });
+
+  // Check if the session is expired
+  if (data && new Date(data.expires) < new Date()) {
+    await db.session.delete({
+      where: {
+        token: session.id,
+      },
+    });
+    return null;
+  }
 
   if (!data) {
     return null;
@@ -160,6 +169,26 @@ export async function deleteSession() {
       expires: new Date(0),
       sameSite: "lax",
       path: "/",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function deleteAllSessions() {
+  const token = (await cookies()).get("snowflake");
+
+  if (!token) return;
+
+  try {
+    const session = JSON.parse(
+      Buffer.from(token.value, "base64").toString("utf-8"),
+    ) as Session;
+
+    await db.session.deleteMany({
+      where: {
+        user_id: session.userId,
+      },
     });
   } catch (error) {
     console.log(error);

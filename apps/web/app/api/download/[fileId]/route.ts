@@ -16,7 +16,7 @@ export async function GET(
     return NextResponse.json({
       success: false,
       message: "An error occured while downloading the file.",
-      error: "Please include file as param.",
+      error: "Please include file id as a param.",
     });
   }
 

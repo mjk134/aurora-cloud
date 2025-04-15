@@ -1,18 +1,61 @@
+import Button from "../../../components/ui/button";
+import { deleteAccount, resetHome } from "./actions";
+
 export default async function Settings() {
-    return (
-      <div className="flex relative font-sans flex-col p-5 h-screen w-full">
-        <h1 className="text-5xl font-bold">Settings</h1>
-        <p className="text-lg">
-            View and change your settings.
-        </p>
-        <div className="grid grid-cols-2 gap-4 grid-rows-auto relative flex-col h-full w-full overflow-scroll">
-          <div className="flex flex-col justify-center items-center">
-            <div className="text-xl font-medium mt-3 pb-4">
-              Manage
+  return (
+    <div className="flex relative font-sans flex-col p-5 h-screen w-full">
+      <h1 className="text-5xl font-bold">Settings</h1>
+      <p className="text-lg">View and change your settings.</p>
+      <div className="grid grid-cols-2 gap-4 grid-rows-auto relative flex-col h-full w-full overflow-scroll">
+        <div className="flex flex-col items-center">
+          <div className="text-3xl font-medium mt-3 pb-4">Manage Account</div>
+          <div className="w-full">
+            <div className="flex flex-col gap-2 w-full">
+              <div className="flex flex-row gap-2 items-center">
+                <p className="text-2xl font-md">Terminate Account</p>
+              </div>
+              <div className="flex flex-col w-full">
+                <p>
+                  Are you sure you want to delete your account? This action{" "}
+                  <b>cannot</b> be reversed.
+                  <br /> Doing so will delete all of your files and folders. You
+                  will also be redirected to login.
+                </p>
+                <Button
+                  variant="danger"
+                  onClick={async () => {
+                    "use server";
+                    await deleteAccount();
+                  }}
+                  className="ml-auto font-semibold text-xl"
+                >
+                  Delete Account
+                </Button>
+              </div>
+              <div className="flex flex-row gap-2 items-center">
+                <p className="text-2xl font-md">Clear files and folders</p>
+              </div>
+              <div className="flex flex-col w-full">
+                <p>
+                  Are you sure you want to delete your files and folders? This
+                  action <b>cannot</b> be reversed.
+                  <br /> Doing so will delete all of your files and folders.
+                </p>
+                <Button
+                  variant="danger"
+                  className="ml-auto font-semibold text-xl"
+                  onClick={async () => {
+                    "use server"
+                    await resetHome();
+                  }}
+                >
+                  Delete Files
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    );
-  }
-  
+    </div>
+  );
+}

@@ -41,7 +41,7 @@ export default class CacheManager {
     });
     const encrypted = await encryptFileStream(readable, writeStream);
     this.cache.set(fileId, { type: "uploading", length: encrypted.length });
-    console.log(encrypted.length + " bytes of data encrypted.");
+    console.log(encrypted.length + " bytes of data encrypted."); // Debugging
     return {
       fileId,
       length: encrypted.length,
@@ -56,7 +56,7 @@ export default class CacheManager {
     chunkSize?: number,
   ): fs.ReadStream {
     const file = fs.createReadStream("../cache/" + fileId, {
-      highWaterMark: chunkSize,
+      highWaterMark: chunkSize, // Max buffer memory allocation
     });
     return file;
   }
@@ -69,7 +69,8 @@ export default class CacheManager {
     return writeStream;
   }
 
-  public async getFileBufferFromCache(fileId: string): Promise<Buffer> {
+  // Async keyword not needed
+  public getFileBufferFromCache(fileId: string): Promise<Buffer> {
     return fs.promises.readFile("../cache/" + fileId);
   }
 

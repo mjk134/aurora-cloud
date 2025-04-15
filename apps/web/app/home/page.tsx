@@ -29,7 +29,7 @@ export default async function Home() {
           <SearchFiles />
         </div>
       </div>
-      <div className="grid grid-cols-2 grid-rows-1 row-span-2 h-full w-full">
+      <div className="grid grid-cols-2 gap-2 grid-rows-1 row-span-2 h-full w-full">
         <div className="flex flex-col gap-3 overflow-scroll">
           <div className="text-2xl font-semibold">Recent files</div>
           <RecentFiles

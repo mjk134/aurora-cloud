@@ -4,7 +4,6 @@ import { createDecipheriv, randomUUID } from "node:crypto";
 import {
   DiscordResponse,
   WebsocketChunkEvent,
-  WebsocketCompleteEvent,
   WebsocketInitEvent,
 } from "@repo/types";
 import EventEmitter from "node:events";

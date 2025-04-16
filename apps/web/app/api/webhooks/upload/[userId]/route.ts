@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import database from "../../../../../lib/database";
-import { WebhookUploadActionUnion, WebsocketCompleteEvent } from "@repo/types";
+import { WebhookUploadActionUnion, WebsocketCompleteEvent, WebsocketErrorEvent } from "@repo/types";
 import clientUserMap from "../../../../../lib/user-map";
 
 // Tokenate this so that this route cannot be exploited
@@ -25,6 +25,23 @@ export async function POST(
   }
 
   if (err === "true") {
+    // Send message to client
+
+    const userSocket = clientUserMap.get(userId);
+
+    if (userSocket) {
+      // Only send if user socket exists, if not - it doesn't matter
+      userSocket.send(
+        JSON.stringify(Buffer.from(
+          JSON.stringify({
+            event: "error",
+            fileId: tempFileId,
+            user_id: userId,
+          } as WebsocketErrorEvent)
+        ))
+      );
+    }
+
     return NextResponse.json({
       success: false,
       message: "An error occured while uploading the file.",
@@ -56,7 +73,7 @@ export async function POST(
       success: false,
       message: "An error occured while uploading the file.",
       error: "User not found.",
-    });
+    }, { status: 401 });
   }
 
   const dbFile = await database.file.create({
@@ -89,7 +106,7 @@ export async function POST(
           success: false,
           message: "An error occured while uploading the file.",
           error: "No chunks found.",
-        });
+        }, { status: 500 });
       }
 
       let index = 0;
@@ -114,7 +131,7 @@ export async function POST(
           success: false,
           message: "An error occured while uploading the file.",
           error: "No chunks found.",
-        });
+        }, { status: 500 });
       }
 
       let tgIndex = 0;

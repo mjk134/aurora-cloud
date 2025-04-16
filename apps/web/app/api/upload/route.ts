@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
       success: false,
       message: "An error occured while uploading the file.",
       error: "User not found.",
-    });
+    }, { status: 401 });
   }
 
   // Read query params
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       success: false,
       message: "An error occured while uploading the file.",
       error: "Folder not found.",
-    });
+    }, { status: 404 });
   }
 
   // Read form data from client
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       success: false,
       message: "An error occured while uploading the file.",
       error: apiResponse.error,
-    });
+    }, { status: 500 });
   }
 
   // Return success response

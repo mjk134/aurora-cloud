@@ -44,6 +44,13 @@ export default class UserQueueHandler {
   public hasQueue(userId: string): boolean {
     return this.userQueueMap.has(userId);
   }
+
+  public clearQueue(userId: string): void {
+    const queue = this.userQueueMap.get(userId);
+    if (queue) {
+      this.userQueueMap.delete(userId);
+    }
+  }
 }
 
 /**

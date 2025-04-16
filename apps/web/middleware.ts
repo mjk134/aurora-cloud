@@ -4,7 +4,7 @@ import {
     getVerfiedSession,
     updateSession,
   } from "./lib/session";
-  import { NextRequest, NextResponse } from "next/server";
+  import { NextRequest, NextResponse, userAgent } from "next/server";
   
   const protectedRoutes = [
     "/home",
@@ -13,6 +13,7 @@ import {
   
   export default async function middleware(req: NextRequest) {
     const path = req.nextUrl.pathname;
+
     const isProtectedRoute = protectedRoutes.includes(path);
     const isPublicRoute = publicRoutes.includes(path);
   

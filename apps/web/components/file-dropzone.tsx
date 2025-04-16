@@ -7,6 +7,8 @@ import { File, Folder, Prisma } from "@prisma/client";
 import { FileBox, FolderBox } from "../app/home/files/[[...dir]]/components";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { tryCatch } from "@repo/util";
+import { url } from "../lib/url";
 
 export default function FileDropzone({
   files,
@@ -131,13 +133,28 @@ export default function FileDropzone({
           setFiles(pendingFiles.filter((file) => file.fileId !== data.fileId));
           router.refresh();
           break;
+        case "error":
+          console.log(
+            "[Client Socket] Error with file with id:",
+            data.fileId,
+            data,
+          );
+          const errorFile = pendingFiles.find(
+            (file) => file.fileId === data.fileId,
+          );
+          if (!errorFile) return;
+          toast.error(`An error occured when proccessing ${errorFile.filename}`, {
+            id: errorFile.toastId,
+          });
+          setFiles(pendingFiles.filter((file) => file.fileId !== data.fileId));
+          break;
       }
     },
     [pendingFiles, router],
   );
 
   useEffect(() => {
-    const websocket = new WebSocket("ws://localhost:3001/api/socket");
+    const websocket = new WebSocket(`wss://${url()}/api/socket`);
     websocket.onopen = () => {
       console.log("[Client Socket] Connected to websocket server");
       websocket.send(
@@ -206,13 +223,31 @@ export default function FileDropzone({
           toastId: toastId,
         },
       ]);
-      await fetch(
-        `/api/upload?folderId=${currentFolderId}&tempFileId=${tempId}`,
-        {
+      const result = await tryCatch<Response>(
+        fetch(`/api/upload?folderId=${currentFolderId}&tempFileId=${tempId}`, {
           method: "POST",
           body: formData,
-        },
+        }),
       );
+
+      if (!result.success) {
+        toast.error(
+          `Error uploading ${file.name}, check console for more info.`,
+        );
+        console.log("[Upload Error]", result.value);
+        setFiles((files) => files.filter((f) => f.fileId !== tempId));
+        continue;
+      } else {
+        const data = await result.value.json();
+        if (!data.success) {
+          toast.error(
+            `Error uploading ${file.name}, check console for more info.`,
+          );
+          console.log("[Upload Error]", data);
+          setFiles((files) => files.filter((f) => f.fileId !== tempId));
+          continue;
+        }
+      }
     }
   };
 

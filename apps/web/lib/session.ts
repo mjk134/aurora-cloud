@@ -190,6 +190,14 @@ export async function deleteAllSessions() {
         user_id: session.userId,
       },
     });
+
+    (await cookies()).set("snowflake", "", {
+      httpOnly: true,
+      secure: true,
+      expires: new Date(0),
+      sameSite: "lax",
+      path: "/",
+    });
   } catch (error) {
     console.log(error);
   }

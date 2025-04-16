@@ -13,7 +13,6 @@ model Users {
   username         String            @unique
   password_hash    String
   created_at       DateTime          @default(now())
-  is_oauth         Boolean           @default(false)
   discord_storage  DiscordStorage[]
   files            File[]
   folders          Folder[]

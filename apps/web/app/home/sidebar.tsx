@@ -49,7 +49,6 @@ export default function Sidebar({
   logout: () => void;
   rootFolderId: string;
 }) {
-  'use client'
   const pathname = usePathname();
   const folders = getTypedStorageItem("recentFolders");
   const routes: Route[] = [
@@ -85,15 +84,12 @@ export default function Sidebar({
     },
   ];
 
+  console.log(folders);
+
   return (
     <div className="flex flex-col w-[20vw] rounded-r-lg border justify-between border-r-slate-100 p-5">
       <div className="flex w-full flex-col">
-        <Image
-          alt="logo"
-          src="/logo.svg"
-          width={300}
-          height={300}
-        />
+        <Image alt="logo" src="/logo.svg" width={300} height={300} />
 
         <h1 className="font-semibold">Main</h1>
         <div className="flex w-full flex-col gap-3 pb-5">
@@ -120,8 +116,8 @@ export default function Sidebar({
               <Folder size={24} /> {folder.folderName}
             </Button>
           ))}
-          {folders?.length === 0 && (
-            <p className="text-gray-200 text-md">No recent folders</p>
+          {!folders?.length && (
+            <p className="text-gray-500 text-md">No recent folders.</p>
           )}
         </div>
       </div>

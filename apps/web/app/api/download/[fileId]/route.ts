@@ -17,7 +17,7 @@ export async function GET(
       success: false,
       message: "An error occured while downloading the file.",
       error: "Please include file id as a param.",
-    });
+    }, { status: 400 });
   }
 
   const user = await getUserFromSession();
@@ -27,7 +27,7 @@ export async function GET(
       success: false,
       message: "An error occured while downloading the file.",
       error: "User not found.",
-    });
+    }, { status: 401 });
   }
 
   // check if file exists with the user
@@ -56,7 +56,7 @@ export async function GET(
       success: false,
       message: "An error occured while downloading the file.",
       error: "File not found in database.",
-    });
+    }, { status: 404 });
   }
 
   let data: DownloadDataUnion | undefined;
@@ -108,7 +108,7 @@ export async function GET(
       success: false,
       message: "An error occured while downloading the file.",
       error: "File not found.",
-    });
+    }, { status: 404 });
   }
 
   const replacer = (key: string, value: any) =>
@@ -144,7 +144,7 @@ export async function GET(
     headers.set('Content-Type', dbFile.file_type);
   }
 
-  // Takes 412904.13469999935 milliseconds to download a 2.3GB file
+  // Takes 412904.13469999935 milliseconds to download a 2.3GB file with internet speed of 10MB/s
   return new NextResponse(stream, {
     status: 200,
     headers: headers,

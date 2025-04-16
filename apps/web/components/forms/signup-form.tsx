@@ -5,6 +5,7 @@ import Input from "../ui/input";
 import { FormAction, FormActionResponse } from "../../types";
 import Button from "../ui/button";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export default function SignupForm({
   serverAction,
@@ -19,6 +20,10 @@ export default function SignupForm({
       password: "",
     },
   });
+
+  useEffect(() => {
+    toast.dismiss()
+  }, [])
 
   return (
     <form

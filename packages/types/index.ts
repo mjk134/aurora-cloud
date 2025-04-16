@@ -63,4 +63,9 @@ export interface WebsocketCompleteEvent extends WebsocketEvent {
     fileId: string;
 }
 
-export type WebsocketEventUnion = WebsocketInitEvent | WebsocketChunkEvent | WebsocketCompleteEvent;
+export interface WebsocketErrorEvent extends WebsocketEvent {
+    event: 'error';
+    fileId: string;
+}
+
+export type WebsocketEventUnion = WebsocketInitEvent | WebsocketChunkEvent | WebsocketCompleteEvent | WebsocketErrorEvent;

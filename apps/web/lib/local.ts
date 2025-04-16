@@ -72,3 +72,31 @@ export function setFileClicked(
   }
   setTypedStorageItem("recentFiles", files);
 }
+
+export function removeFileClicked(fileId: string) {
+  const files = getTypedStorageItem("recentFiles");
+
+  if (!files) return;
+
+  const fileIndex = files.findIndex((file) => file.fileId === fileId);
+
+  if (fileIndex !== -1) {
+    files.splice(fileIndex, 1);
+    setTypedStorageItem("recentFiles", files);
+  }
+}
+
+export function removeFolderClicked(folderId: string) {
+  const folders = getTypedStorageItem("recentFolders");
+
+  if (!folders) return;
+
+  const folderIndex = folders.findIndex(
+    (folder) => folder.folderId === folderId,
+  );
+
+  if (folderIndex !== -1) {
+    folders.splice(folderIndex, 1);
+    setTypedStorageItem("recentFolders", folders);
+  }
+}

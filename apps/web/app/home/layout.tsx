@@ -23,8 +23,8 @@ export default async function DashboardLayout({
   });
 
   if (!rootFolder) {
-    console.error("Root folder not found for user", user);
-    return <Loading />;
+    console.log("Root folder not found for user", user);
+    return redirect('/_not-found'); // or some error page
   }
 
   return (

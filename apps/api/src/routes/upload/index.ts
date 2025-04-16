@@ -32,10 +32,10 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     );
 
     if (!encryptedFileDataResult.success) {
-      return {
+      return reply.status(500).send({
         error: true,
         message: "Failed to encrypt file.",
-      };
+      });
     }
 
     let params = new URLSearchParams(request.raw.url?.split("/upload")[1]);
@@ -43,20 +43,21 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     const userId = params.get("userId");
     const folderId = params.get("folderId");
     const tempFileId = params.get("tempFileId");
+
     request.log.info(`User ID is: ${userId}. Folder ID is: ${folderId}.`);
 
     if (!folderId) {
-      return {
+      return reply.status(400).send({
         error: true,
         message: "no folder",
-      };
+      });
     }
 
     if (!userId) {
-      return {
+      return reply.status(400).send({
         error: true,
         message: "no user",
-      };
+      });
     }
 
     console.log(encryptedFileData.length + " bytes of data encrypted.");
@@ -92,14 +93,52 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     const queue = UserQueueHandler.getInstance().getUserQueue(userId);
 
     if (!queue) {
-      return {
+      return reply.status(401).send({
         error: true,
         message: "no queue",
-      };
+      });
     }
 
     // Push the handler to the queue
     queue.addToQueue(handler);
+
+    return {
+      error: false,
+      message: "success",
+    };
+  });
+
+  fastify.delete("/clear-queue", async function (request, reply) {
+    const userId = request.body as string;
+
+    if (!userId && typeof userId !== "string") {
+      return reply.status(400).send({
+        error: true,
+        message: "no user provided",
+      });
+    }
+
+    const userQueueHandler = UserQueueHandler.getInstance();
+
+    if (!userQueueHandler) {
+      return reply.status(401).send({
+        error: true,
+        message: "no queue",
+      });
+    }
+
+    if (!userQueueHandler.hasQueue(userId)) {
+      return reply.status(401).send({
+        error: true,
+        message: "no queue for user",
+      });
+    }
+
+    request.log.info(`Clearing queue for user ${userId}.`);
+
+    // Clear the queue for the user
+
+    userQueueHandler.clearQueue(userId);
 
     return {
       error: false,

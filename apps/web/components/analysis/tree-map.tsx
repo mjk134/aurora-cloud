@@ -10,7 +10,7 @@ export default function FolderTreeMap({ data }: { data: FolderFileTree }) {
       <Treemap
         width={1000}
         height={250}
-        data={data.children}
+        data={[data]}
         nameKey={"name"}
         dataKey="size"
         stroke="#fff"

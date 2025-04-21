@@ -8,6 +8,14 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ userId: string }> },
 ) {
+  if (req.referrer !== "about:client") {
+    return NextResponse.json({
+      success: false,
+      message: "An error occured while uploading the file.",
+      error: "Invalid referrer.",
+    }, { status: 401 });
+  }
+
   const { userId } = await params;
   const searchParams = req.nextUrl.searchParams;
 

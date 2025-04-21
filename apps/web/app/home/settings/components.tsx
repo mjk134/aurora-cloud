@@ -3,7 +3,8 @@
 import { toast } from "sonner";
 import Button from "../../../components/ui/button";
 import { deleteAccount, resetHome } from "./actions";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useTransition } from "react";
+import { setTypedStorageItem } from "../../../lib/local";
 
 export default function SettingsPage() {
   const [isPending, startTransition] = useTransition();
@@ -38,6 +39,8 @@ export default function SettingsPage() {
                     startTransition(async () => {
                       await deleteAccount();
                     });
+                    setTypedStorageItem("recentFiles", [])
+                    setTypedStorageItem("recentFolders", [])
                   }}
                   className="ml-auto font-semibold text-xl"
                 >
@@ -61,6 +64,8 @@ export default function SettingsPage() {
                     startTransition(async () => {
                       await resetHome();
                     });
+                    setTypedStorageItem("recentFiles", [])
+                    setTypedStorageItem("recentFolders", [])
                   }}
                 >
                   Delete Files

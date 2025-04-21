@@ -31,6 +31,7 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       }),
     );
 
+
     if (!encryptedFileDataResult.success) {
       return reply.status(500).send({
         error: true,
@@ -38,11 +39,23 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       });
     }
 
+
+
     let params = new URLSearchParams(request.raw.url?.split("/upload")[1]);
     const encryptedFileData = encryptedFileDataResult.value;
     const userId = params.get("userId");
     const folderId = params.get("folderId");
     const tempFileId = params.get("tempFileId");
+
+    if (encryptedFileData.length === 0) {
+      // Delete from cache
+      await CacheManager.getInstance().removeFileFromCache(encryptedFileData.fileId);
+
+      return reply.status(400).send({
+        error: true,
+        message: "no data",
+      });
+    }
 
     request.log.info(`User ID is: ${userId}. Folder ID is: ${folderId}.`);
 

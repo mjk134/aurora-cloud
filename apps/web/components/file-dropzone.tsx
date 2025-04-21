@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "../lib/style";
 import { WebsocketEventUnion } from "@repo/types";
-import { File, Folder, Prisma } from "@prisma/client";
+import { Folder, Prisma } from "@prisma/client";
 import { FileBox, FolderBox } from "../app/home/files/[[...dir]]/components";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -154,7 +154,7 @@ export default function FileDropzone({
   );
 
   useEffect(() => {
-    const websocket = new WebSocket(`wss://${url()}/api/socket`);
+    const websocket = new WebSocket(`ws://${url()}/api/socket`);
     websocket.onopen = () => {
       console.log("[Client Socket] Connected to websocket server");
       websocket.send(

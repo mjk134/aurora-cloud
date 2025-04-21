@@ -2,7 +2,6 @@ import { File, Folder } from "@prisma/client";
 import Files from "../../../components/files";
 import SearchFiles from "../../../components/files-search";
 import { deleteFile } from "../files/[[...dir]]/actions";
-import { cn } from "../../../lib/style";
 import { SearchX } from "lucide-react";
 import { Suspense } from "react";
 import database from "../../../lib/database";

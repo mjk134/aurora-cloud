@@ -1,6 +1,6 @@
 "use client";
 
-import { File, Folder, Prisma } from "@prisma/client";
+import { Folder, Prisma } from "@prisma/client";
 import {
   FileArchive,
   FileIcon,
@@ -14,7 +14,7 @@ import { AlertDialog, ContextMenu } from "radix-ui";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { deleteFolder, getSubFilesCount } from "./actions";
-import { setFileClicked, setFolderClicked } from "../../../../lib/local";
+import { removeFileClicked, removeFolderClicked, setFileClicked, setFolderClicked } from "../../../../lib/local";
 import { toast } from "sonner";
 import { tryCatch } from "@repo/util";
 
@@ -199,6 +199,7 @@ export function FolderBox({
   const [pending, setTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
   const [folderFileCount, setFolderFileCount] = useState([0, 0]);
+  const [deletedFoldersFiles, setDeletedFoldersFiles] = useState<[string[], string[]] | null>(null)
 
   useEffect(() => {
     if (isOpen) {
@@ -209,6 +210,31 @@ export function FolderBox({
       });
     }
   }, [folder, isOpen, setContextMenuOpen]);
+
+  useEffect(() => {
+    if (deletedFoldersFiles === null) return;
+    const [deletedFiles, deletedFolders] = deletedFoldersFiles;
+    // remove it from local storage 
+    for (const fileId of deletedFiles) {
+      removeFileClicked(fileId);
+    }
+
+    // remove it from recent folders
+    for (const folderId of deletedFolders) {
+      removeFolderClicked(folderId);
+    }
+
+    // Remove root
+    removeFolderClicked(folder.folder_id);
+    // Show toast
+    toast.success(
+      `Deleted ${deletedFiles.length} file(s) and ${deletedFolders.length + 1} folder(s)`,
+    );
+
+    router.refresh()
+    setDeletedFoldersFiles(null);
+
+  }, [deletedFoldersFiles, folder.folder_id]);
 
   return (
     <AlertDialog.Root open={isOpen} onOpenChange={setIsOpen}>
@@ -279,8 +305,9 @@ export function FolderBox({
             <AlertDialog.Action asChild>
               <Button
                 onClick={() => {
-                  setTransition(() => {
-                    deleteFolder(folder.folder_id, pathname);
+                  setTransition(async () => {
+                    const folderFiles = await deleteFolder(folder.folder_id, pathname);
+                    setDeletedFoldersFiles(folderFiles);
                   });
                 }}
                 loading={pending}

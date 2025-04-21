@@ -2,7 +2,6 @@
 
 import {
   deleteAllSessions,
-  deleteSession,
   getUserFromSession,
 } from "../../../lib/session";
 import database from "../../../lib/database";

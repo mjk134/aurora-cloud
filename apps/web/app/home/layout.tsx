@@ -1,6 +1,4 @@
 import { getUserFromSession } from "../../lib/session";
-import { Suspense } from "react";
-import Loading from "./files/[[...dir]]/loading";
 import Sidebar from "./sidebar";
 import { redirect } from "next/navigation";
 import { logout } from "./actions";

@@ -86,10 +86,10 @@ export async function deleteFile(fileId: string, pathname: string) {
   revalidatePath(pathname); // revalidate folder path
 }
 
-export async function deleteFolder(folderId: string, pathname?: string, removeRoot = true) {
+export async function deleteFolder(folderId: string, pathname?: string, removeRoot = true): Promise<[string[], string[]]> {
   const user = await getUserFromSession();
 
-  if (!user) return;
+  if (!user) return [[], []];
 
   const [fileIds, folderIds] = await getAllSubFileIds(folderId, user.user_id);
 
@@ -143,8 +143,9 @@ export async function deleteFolder(folderId: string, pathname?: string, removeRo
     },
   });
 
-  if (!pathname) return;
+  if (!pathname) return [fileIds, folderIds];
   revalidatePath(pathname); // revalidate folder path
+  return [fileIds, folderIds];
 }
 
 export async function getAllSubFileIds(

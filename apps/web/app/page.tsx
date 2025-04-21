@@ -6,7 +6,7 @@ import Button from "../components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 
-export default async function Page() {
+export default function Page() {
   return (
     <main className="flex font-sans flex-col p-6 relative min-h-screen w-full overflow-hidden">
       <GradientBackground />

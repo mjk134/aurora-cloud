@@ -11,11 +11,9 @@ export default function Login() {
         <div className="flex md:gap-2 flex-col">
           <h1 className="text-4xl md:text-6xl font-extrabold">Login</h1>
           <p className="text-sm md:text-base leading-3 md:leading-4">
-            Signing up, immediately allows you to upload files,
+            Logging in, immediately allows you to upload files,
             <br />
-            no other information required! Sign up using either
-            <br />
-            username & password or Google/X.
+            no other information required!
           </p>
         </div>
         <LoginForm serverAction={loginAction} />

@@ -4,7 +4,6 @@ import { useEffect, useState, useTransition } from "react";
 import { File } from "@prisma/client";
 import { getTypedStorageItem } from "../lib/local";
 import { getFiles } from "../app/home/actions";
-import Files from "./files";
 import { cn } from "../lib/style";
 import { FileBox } from "../app/home/files/[[...dir]]/components";
 

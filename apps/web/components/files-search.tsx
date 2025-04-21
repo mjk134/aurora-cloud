@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Input from "./ui/input";
 import { SearchIcon } from "lucide-react";
 import { cn } from "../lib/style";
-import { redirect, usePathname } from "next/navigation";
+import { redirect } from "next/navigation";
 
 export default function SearchFiles({
   initalSearch = "",
@@ -28,6 +28,10 @@ export default function SearchFiles({
 
   const handleEnter = () => {
     // Proccess search
+    if (search.length === 0) {
+      return;
+    }
+
     redirect(`/home/search?q=${encodeURIComponent(search)}`);
   };
 

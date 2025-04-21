@@ -1,15 +1,10 @@
-import { cookies } from "next/headers";
-import Input from "../../../../components/ui/input";
 import FileDropzone from "../../../../components/file-dropzone";
 import { getUserFromSession } from "../../../../lib/session";
 import database from "../../../../lib/database";
 import { redirect } from "next/navigation";
-import { revalidatePath, revalidateTag } from "next/cache";
 import { createFolder, deleteFile } from "./actions";
-import Button from "../../../../components/ui/button";
 import { FolderPlus } from "lucide-react";
 import Link from "next/link";
-import path from "path";
 import { CreateFolderModal } from "../../../../components/modals/create-folder";
 import SearchFiles from "../../../../components/files-search";
 

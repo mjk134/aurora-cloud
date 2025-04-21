@@ -103,21 +103,6 @@ export class TelegramClient {
     const messages = [];
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
-      if (!chunk) {
-        console.log("Failed to read chunk", i, chunk);
-        eventEmitter.emit(
-          "message",
-          JSON.stringify({
-            event: "chunk",
-            fileId: tempFileId,
-            chunk: i + 1,
-            proccessed: false,
-            user_id: userId,
-            progress: i / chunks.length,
-          } as WebsocketChunkEvent),
-        );
-        continue;
-      }
       const document = await this.uploadChunk({
         chatId: chatId ?? this.DEFAULT_CHAT_ID,
         chunkId: randomUUID(),

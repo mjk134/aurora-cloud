@@ -43,6 +43,7 @@ export class Client {
     fileId,
     chunkData,
   }: UploadChunkOptions): Promise<Attachment> {
+    // Discord takes a multipart form data with a payload_json field and a file field input
     const data = new FormData();
     data.append("payload_json", JSON.stringify({ content: fileId }));
     data.append(
@@ -54,10 +55,12 @@ export class Client {
       body: data,
     });
     const msg = (await res.json()) as Record<string, any>;
+    // If requests are sent too quickly or too many chunks, discord will return a 429 error
     if (msg.retry_after) {
       await new Promise((resolve) =>
         setTimeout(resolve, msg.retry_after * 1000),
       );
+      // Recursive call to upload chunk
       return this.uploadChunk({ channelId, chunkId, fileId, chunkData });
     }
 
@@ -100,9 +103,10 @@ export class Client {
     userId: string;
     tempFileId: string;
   }): Promise<DiscordResponse> {
+    // File name is not needed so generate a random id
     const fileId = randomUUID();
     const chunks = this.chunkFile(fileBuffer);
-    // Initalisation complete
+    // Initalisation complete, notify client
     eventEmitter.emit(
       "message",
       JSON.stringify({
@@ -116,21 +120,6 @@ export class Client {
     // Loop over chunks
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
-      if (!chunk) {
-        console.log("Failed to read chunk", i, chunk);
-        eventEmitter.emit(
-          "message",
-          JSON.stringify({
-            event: "chunk",
-            fileId: tempFileId,
-            chunk: i,
-            proccessed: false,
-            user_id: userId,
-            progress: (i + 1) / chunks.length,
-          } as WebsocketChunkEvent),
-        );
-        continue;
-      }
       const attachment = await this.uploadChunk({
         channelId: channelId ?? this.DEFAULT_CHANNEL,
         chunkId: randomUUID(),

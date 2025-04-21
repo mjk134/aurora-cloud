@@ -143,9 +143,12 @@ export default function FileDropzone({
             (file) => file.fileId === data.fileId,
           );
           if (!errorFile) return;
-          toast.error(`An error occured when proccessing ${errorFile.filename}`, {
-            id: errorFile.toastId,
-          });
+          toast.error(
+            `An error occured when proccessing ${errorFile.filename}`,
+            {
+              id: errorFile.toastId,
+            },
+          );
           setFiles(pendingFiles.filter((file) => file.fileId !== data.fileId));
           break;
       }
@@ -154,7 +157,7 @@ export default function FileDropzone({
   );
 
   useEffect(() => {
-    const websocket = new WebSocket(`ws://${url()}/api/socket`);
+    const websocket = new WebSocket(`${url()}/api/socket`);
     websocket.onopen = () => {
       console.log("[Client Socket] Connected to websocket server");
       websocket.send(
@@ -206,6 +209,14 @@ export default function FileDropzone({
       if (file.size === 0) {
         toast.error(
           `File ${file.name} is empty! This service only supports files with content.`,
+        );
+        continue;
+      }
+
+      if (file.size > 2147483648) {
+        console.log("[File Size Error]", file.size);
+        toast.error(
+          `File ${file.name} is too large! This service only supports files up to 2GB.`,
         );
         continue;
       }

@@ -59,8 +59,22 @@ export default async function Files({
       folder_id: {
         in: asyncParams.dir,
       },
+      user_id: user?.user_id,
     },
   });
+
+  let found = false;
+
+  for (let i = 0; i < pathFolders.length; i++) {
+    if (pathFolders[i]?.folder_id === folderId) {
+      found = true;
+      break;
+    }
+  }
+
+  if (!found) {
+    redirect("/home/files/" + rootFolder?.folder_id);
+  }
 
   const getHref = (folderId: string, index: number, folders: string[]) => {
     let href = "/home/files/";
@@ -140,7 +154,7 @@ export default async function Files({
       created_at: true,
       user_id: true,
       file_type: true,
-    }
+    },
   });
 
   // Query folder table to see what folders are in the parent folder

@@ -12,7 +12,7 @@ import { EncrytedFileCacheInfo } from "../../handlers/types.js";
 const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.register(import("@fastify/multipart"), {
     limits: {
-      fileSize: 64000000, // To allow large file uploads, but for even larger files it should be streamed
+      fileSize: Infinity, // To allow large file uploads, but for even larger files it should be streamed
     },
   });
 

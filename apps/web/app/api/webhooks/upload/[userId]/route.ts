@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import database from "../../../../../lib/database";
-import { WebhookUploadActionUnion, WebsocketCompleteEvent, WebsocketErrorEvent } from "@repo/types";
+import {
+  WebhookUploadActionUnion,
+  WebsocketCompleteEvent,
+  WebsocketErrorEvent,
+} from "@repo/types";
 import clientUserMap from "../../../../../lib/user-map";
 
 // Tokenate this so that this route cannot be exploited
@@ -8,12 +12,16 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ userId: string }> },
 ) {
+  console.log("[Webhhook Upload] Referrer:", req.referrer);
   if (req.referrer !== "about:client") {
-    return NextResponse.json({
-      success: false,
-      message: "An error occured while uploading the file.",
-      error: "Invalid referrer.",
-    }, { status: 401 });
+    return NextResponse.json(
+      {
+        success: false,
+        message: "An error occured while uploading the file.",
+        error: "Invalid referrer.",
+      },
+      { status: 401 },
+    );
   }
 
   const { userId } = await params;
@@ -22,14 +30,14 @@ export async function POST(
   const tempFileId = searchParams.get("tempFileId");
 
   // Error handling
-  const err = searchParams.get('err') as 'true' | 'false' | null;
+  const err = searchParams.get("err") as "true" | "false" | null;
 
   if (!err) {
-      return NextResponse.json({
-          success: false,
-          message: "An error occured while uploading the file.",
-          error: "No type found."
-      })
+    return NextResponse.json({
+      success: false,
+      message: "An error occured while uploading the file.",
+      error: "No type found.",
+    });
   }
 
   if (err === "true") {
@@ -40,13 +48,15 @@ export async function POST(
     if (userSocket) {
       // Only send if user socket exists, if not - it doesn't matter
       userSocket.send(
-        JSON.stringify(Buffer.from(
-          JSON.stringify({
-            event: "error",
-            fileId: tempFileId,
-            user_id: userId,
-          } as WebsocketErrorEvent)
-        ))
+        JSON.stringify(
+          Buffer.from(
+            JSON.stringify({
+              event: "error",
+              fileId: tempFileId,
+              user_id: userId,
+            } as WebsocketErrorEvent),
+          ),
+        ),
       );
     }
 
@@ -77,11 +87,14 @@ export async function POST(
   });
 
   if (!user) {
-    return NextResponse.json({
-      success: false,
-      message: "An error occured while uploading the file.",
-      error: "User not found.",
-    }, { status: 401 });
+    return NextResponse.json(
+      {
+        success: false,
+        message: "An error occured while uploading the file.",
+        error: "User not found.",
+      },
+      { status: 401 },
+    );
   }
 
   const dbFile = await database.file.create({
@@ -110,11 +123,14 @@ export async function POST(
       const dcChunks = data.chunks;
 
       if (!dcChunks) {
-        return NextResponse.json({
-          success: false,
-          message: "An error occured while uploading the file.",
-          error: "No chunks found.",
-        }, { status: 500 });
+        return NextResponse.json(
+          {
+            success: false,
+            message: "An error occured while uploading the file.",
+            error: "No chunks found.",
+          },
+          { status: 500 },
+        );
       }
 
       let index = 0;
@@ -135,11 +151,14 @@ export async function POST(
     case "tg":
       const tgChunks = data.chunks;
       if (!tgChunks) {
-        return NextResponse.json({
-          success: false,
-          message: "An error occured while uploading the file.",
-          error: "No chunks found.",
-        }, { status: 500 });
+        return NextResponse.json(
+          {
+            success: false,
+            message: "An error occured while uploading the file.",
+            error: "No chunks found.",
+          },
+          { status: 500 },
+        );
       }
 
       let tgIndex = 0;
@@ -162,16 +181,18 @@ export async function POST(
   if (userSocket) {
     // Only send if user socket exists, if not - it doesn't matter
     userSocket.send(
-      JSON.stringify(Buffer.from(
-        JSON.stringify({
-          event: "complete",
-          fileId: tempFileId,
-          user_id: userId,
-        } as WebsocketCompleteEvent)
-      ))
+      JSON.stringify(
+        Buffer.from(
+          JSON.stringify({
+            event: "complete",
+            fileId: tempFileId,
+            user_id: userId,
+          } as WebsocketCompleteEvent),
+        ),
+      ),
     );
   }
-  
+
   return NextResponse.json({
     success: true,
     message: "File uploaded.",

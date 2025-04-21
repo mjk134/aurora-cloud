@@ -18,7 +18,6 @@ model Users {
   folders          Folder[]
   Session          Session[]
   telegram_storage TelegramStorage[]
-  youtube_storage  YouTubeStorage[]
   parents          Parent[]
 }
 
@@ -55,18 +54,6 @@ model TelegramStorage {
   users       Users    @relation(fields: [user_id], references: [user_id])
 }
 
-model YouTubeStorage {
-  chunk_id    String   @id @default(cuid())
-  user_id     String
-  video_id    String
-  file_id     String
-  chunk_index Int
-  url         String
-  created_at  DateTime @default(now())
-  files       File     @relation(fields: [file_id], references: [file_id])
-  users       Users    @relation(fields: [user_id], references: [user_id])
-}
-
 model File {
   file_id          String            @id @default(cuid())
   user_id          String
@@ -80,7 +67,6 @@ model File {
   discord_storage  DiscordStorage[]
   users            Users             @relation(fields: [user_id], references: [user_id])
   telegram_storage TelegramStorage[]
-  youtube_storage  YouTubeStorage[]
 }
 
 model Folder {

@@ -96,7 +96,6 @@ export default async function Files({
         <SearchFiles />
         <div className="@container flex relative flex-col h-full w-full overflow-hidden">
           <div className="flex gap-2">
-            {/* TODO: Prevent re-render */}
             {pathFolders.map((folder, index) => {
               return (
                 <div key={folder.folder_id} className="flex items-center gap-2">
@@ -177,7 +176,6 @@ export default async function Files({
       <SearchFiles />
       <div className="@container flex relative flex-col h-full w-full overflow-hidden">
         <div className="flex gap-2">
-          {/* TODO: Prevent re-render */}
           {pathFolders.map((folder, index) => {
             return (
               <div key={folder.folder_id} className="flex items-center gap-2">

@@ -80,7 +80,7 @@ export class QueueHandler {
 
     // in case all queues are processing, add to the queue with the least amount of items
     for (const type of this.types) {
-      if (type === "tt" || type === "yt") continue; // TODO: Not implemented yet
+      if (type === "tt" || type === "yt") continue; // Not implemented yet
       if (!this.processing.get(type)) {
         queueToUse = type;
         break;

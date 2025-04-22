@@ -1,43 +1,71 @@
-# Turborepo starter
+# Aurora Cloud
 
-This is an official starter Turborepo.
+Aurora Cloud offers the simplest way to store your data on social media CDNs such as Discord and Telegram (soon TikTok and YouTube). This way it is free and basicaly infinite. The only limitations are network speeds and the API limitations of the CDNs.
 
 ## Using this example
+
+Make sure you set your environment variables in `.env` file for both client and server.
+
+### Client .env
+```env
+POSTGRES_PRISMA_URL=""
+POSTGRES_URL_NON_POOLING=""
+```
+
+### Server .env
+```env
+TOKEN=DISCORD_TOKEN
+TELEGRAM_TOKEN=
+```
+
+### Server Environment Variables
+Your discord bot token should be set in the `TOKEN` environment variable. You can create a bot and get the token from the [Discord Developer Portal](https://discord.com/developers/applications). For the telegram bot token, you can create a bot using the [BotFather](https://core.telegram.org/bots#botfather) and get the token from there.
+
+### Database
+You will also need a Neon database. You can create one for free at [neon.tech](https://neon.tech). After creating a database, you will need to set the `POSTGRES_PRISMA_URL` and `POSTGRES_URL_NON_POOLING` environment variables in the `.env` file.
+
+### Install dependencies
+
+To install the dependencies, run the following command from the root of the monorepo:
+
+```sh
+pnpm install
+```
+
+### Build and Run
 
 Run the following command:
 
 ```sh
-npx create-turbo@latest
+pnpm build
+
+# For the server
+cd apps/api && pnpm start
+
+# For the client
+cd apps/web && pnpm dev
 ```
 
 ## What's inside?
 
-This Turborepo includes the following packages/apps:
+Since its a turborepo it includes the following packages/apps:
 
 ### Apps and Packages
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
+- `web`: A [Next.js](https://nextjs.org/) frontend.
+- `api`: A [Fastify](https://www.fastify.io/) API to handle uploading to the server.
+- `@repo/util`: Contains some error utilities.
+- `@repo/types`: Contains shared types.
+- `@repo/eslint-config`: `eslint` configurations
 - `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
 
 Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
 
 ### Build
 
 To build all apps and packages, run the following command:
 
 ```
-cd my-turborepo
 pnpm build
 ```
 
@@ -46,7 +74,6 @@ pnpm build
 To develop all apps and packages, run the following command:
 
 ```
-cd my-turborepo
 pnpm dev
 ```
 
@@ -57,8 +84,7 @@ Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo
 By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
 
 ```
-cd my-turborepo
-npx turbo login
+pnpm dlx turbo login
 ```
 
 This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
@@ -66,16 +92,8 @@ This will authenticate the Turborepo CLI with your [Vercel account](https://verc
 Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
 
 ```
-npx turbo link
+pnpm dlx turbo link
 ```
 
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+# DISCLAIMER
+This project is meant for educational purposes only. I did it for my A-Level Computer Science NEA. I am not responsible for any misuse of this project. Please do not use it for illegal purposes. I am not responsible for any bans or suspensions from Discord or Telegram. Use at your own risk.

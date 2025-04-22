@@ -1,6 +1,6 @@
 import LoginForm from "../../components/forms/login-form";
 import GradientBackground from "../../components/gradient-background";
-import { loginAction } from "./actions";
+import { loginAction } from "./actions"; // This is passsed in as a prop
 
 export default function Login() {
   return (
@@ -16,6 +16,7 @@ export default function Login() {
             no other information required!
           </p>
         </div>
+        {/* All login logic is here */}
         <LoginForm serverAction={loginAction} />
       </div>
       <div className="text-white">© Copyright Aurora Cloud 2025</div>

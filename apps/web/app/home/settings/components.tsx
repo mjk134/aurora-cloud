@@ -10,6 +10,7 @@ export default function SettingsPage() {
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
+    // Dismiss the toast if the action is pending
     toast.dismiss();
   }, [isPending]);
 

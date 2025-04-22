@@ -1,12 +1,10 @@
 "use client";
 
-import mimedb from "mime-db";
+import mimedb from "mime-db"; // A list of all mime types and their extensions
 import {
   Bar,
   BarChart,
   CartesianGrid,
-  Label,
-  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -30,7 +28,7 @@ export default function FileTypeBarChart({
         color: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
       };
     })
-    .sort((a, b) => b.value - a.value);
+    .sort((a, b) => b.value - a.value); // Order by value descending
 
   return (
     <ResponsiveContainer width="100%" height={400}>
@@ -39,7 +37,6 @@ export default function FileTypeBarChart({
         <Bar dataKey="value" fill="#0e7dbd" />
         <XAxis
           dataKey="name"
-          // label={{ value: "File types", postion: "insideBottom", offset: 0 }}
         />
         <YAxis
           label={{ value: "File count", angle: -90, position: "insideLeft" }}

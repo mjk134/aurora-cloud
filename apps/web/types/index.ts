@@ -1,3 +1,4 @@
+// For server actions with forms
 export type FormActionResponse = {
   error: boolean;
   message: string;
@@ -9,6 +10,7 @@ export type FormAction<T> = (
   data: FormData,
 ) => Promise<FormActionResponse | void>;
 
+// For the local storage schema
 export interface LocalStorageSchema {
   recentFolders: {
     folderId: string;
@@ -22,6 +24,7 @@ export interface LocalStorageSchema {
   }[];
 }
 
+// For the file tree map
 export type FileTreeObjType = {
   name: string;
   size: number;

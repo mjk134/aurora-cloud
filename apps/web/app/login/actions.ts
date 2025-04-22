@@ -82,11 +82,13 @@ export async function loginAction(
     };
   }
 
+  // Password stored as base64 string, so decode it first.
   const decodedPassword = Buffer.from(user.password_hash, "base64").toString(
     "utf-8",
   );
   const [salt, hash] = decodedPassword.split(".");
 
+  // Invalidation check, so typescript knows that salt and hash are not undefined.
   if (!salt || !hash) {
     return {
       error: true,
@@ -107,7 +109,7 @@ export async function loginAction(
     };
   }
 
-  await deleteSession()
+  await deleteSession();
   await createSession(user.user_id);
   console.log("Session created");
 

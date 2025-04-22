@@ -14,10 +14,16 @@ import { AlertDialog, ContextMenu } from "radix-ui";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { deleteFolder, getSubFilesCount } from "./actions";
-import { removeFileClicked, removeFolderClicked, setFileClicked, setFolderClicked } from "../../../../lib/local";
+import {
+  removeFileClicked,
+  removeFolderClicked,
+  setFileClicked,
+  setFolderClicked,
+} from "../../../../lib/local";
 import { toast } from "sonner";
 import { tryCatch } from "@repo/util";
 
+// Some previewable types
 const textFileTypes = [
   "text/plain",
   "text/html",
@@ -32,6 +38,7 @@ export function FileBox({
   deleteFile,
   customFolderLink,
 }: {
+  // Type the file prop correctly
   file: Prisma.FileGetPayload<{
     select: {
       file_id: true;
@@ -42,10 +49,15 @@ export function FileBox({
       file_type: true;
     };
   }>;
+  // Server action needs to be passed in as prop
   deleteFile: (fileId: string, path: string) => Promise<void>;
   customFolderLink?: string;
 }) {
   const pathname = usePathname();
+  /**
+   * This hook is needed to prevent the user from spamming requests for a single file
+   * Other files can have actions done simultaneously since they are not in the same state
+   */
   const [isPending, startTransition] = useTransition();
   const [isContextMenuOpen, setContextMenuOpen] = React.useState(false);
   const isPreviewable =
@@ -78,8 +90,11 @@ export function FileBox({
       toast.error("Failed to download file. Please try again.");
       return;
     }
+    // This is the response from the server, its handled using blobs on the client
     const res = result.value;
     const blob = await res.blob();
+
+    // This prevents redirecting and the download happens in the background
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -199,9 +214,15 @@ export function FolderBox({
   const [pending, setTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
   const [folderFileCount, setFolderFileCount] = useState([0, 0]);
-  const [deletedFoldersFiles, setDeletedFoldersFiles] = useState<[string[], string[]] | null>(null)
+  const [deletedFoldersFiles, setDeletedFoldersFiles] = useState<
+    [string[], string[]] | null
+  >(null);
 
   useEffect(() => {
+    // This hook is called when the isOpen state changes
+    // So when the dialog opens, only then we can get the file count
+    // This prevents all folders calling it at once
+    // and causing a lot of requests
     if (isOpen) {
       setContextMenuOpen(false);
       setTransition(async () => {
@@ -214,7 +235,7 @@ export function FolderBox({
   useEffect(() => {
     if (deletedFoldersFiles === null) return;
     const [deletedFiles, deletedFolders] = deletedFoldersFiles;
-    // remove it from local storage 
+    // remove it from local storage
     for (const fileId of deletedFiles) {
       removeFileClicked(fileId);
     }
@@ -228,15 +249,18 @@ export function FolderBox({
     removeFolderClicked(folder.folder_id);
     // Show toast
     toast.success(
-      `Deleted ${deletedFiles.length} file(s) and ${deletedFolders.length + 1} folder(s)`,
+      `Deleted ${deletedFiles.length} file(s) and ${
+        deletedFolders.length + 1
+      } folder(s)`,
     );
 
-    router.refresh()
+    router.refresh();
     setDeletedFoldersFiles(null);
-
   }, [deletedFoldersFiles, folder.folder_id]);
 
   return (
+    // AlertDialog is used to confirm the deletion of the folder
+    // ContextMenu is used to show the delete option
     <AlertDialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <ContextMenu.Root onOpenChange={setContextMenuOpen}>
         <ContextMenu.Trigger asChild>
@@ -306,7 +330,10 @@ export function FolderBox({
               <Button
                 onClick={() => {
                   setTransition(async () => {
-                    const folderFiles = await deleteFolder(folder.folder_id, pathname);
+                    const folderFiles = await deleteFolder(
+                      folder.folder_id,
+                      pathname,
+                    );
                     setDeletedFoldersFiles(folderFiles);
                   });
                 }}

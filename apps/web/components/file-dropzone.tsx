@@ -36,8 +36,6 @@ export default function FileDropzone({
   currentFolderId: string;
   children?: React.ReactNode;
 }) {
-  const [showInput, setShowInput] = useState(false);
-  const [dragging, setDragging] = useState(false);
   const socket = useRef<WebSocket>(null);
   const router = useRouter();
   const [pendingFiles, setFiles] = useState<
@@ -49,7 +47,7 @@ export default function FileDropzone({
     }[]
   >([]);
 
-  // Not sure if this is needed but good to have
+  // Not sure if this is needed but good to have (refering to useCallback)
   const updateFiles = useCallback(
     (data: WebsocketEventUnion) => {
       switch (data.event) {
@@ -184,22 +182,18 @@ export default function FileDropzone({
     };
   }, [pendingFiles, setFiles, updateFiles, userId]);
 
+  // Prevent default drag behavior
+
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
-    setDragging(true);
-    setShowInput(true);
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
-    setDragging(false);
-    setShowInput(false);
   };
 
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
-    setDragging(false);
-    setShowInput(false);
     // Handle the file drop here
     const files = e.dataTransfer.files;
 
@@ -255,6 +249,7 @@ export default function FileDropzone({
             `Error uploading ${file.name}, check console for more info.`,
           );
           console.log("[Upload Error]", data);
+          // Remove the file from the pending files
           setFiles((files) => files.filter((f) => f.fileId !== tempId));
           continue;
         }

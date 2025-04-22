@@ -63,6 +63,7 @@ export default async function Files({
     },
   });
 
+  // Linear search to check if the current folder id is in the path folders (extreme case)
   let found = false;
 
   for (let i = 0; i < pathFolders.length; i++) {
@@ -85,6 +86,7 @@ export default async function Files({
     return href;
   };
 
+  // Show placeholder if no files or folders in the folder
   if (folderFileIds.length === 0) {
     return (
       <div className="flex relative font-sans flex-col p-5 h-screen w-full">

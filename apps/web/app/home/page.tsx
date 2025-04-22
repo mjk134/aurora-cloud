@@ -39,6 +39,7 @@ export default async function Home() {
         </div>
         <div className="flex flex-col gap-3">
           <div className="text-2xl font-semibold">Analysis</div>
+          {/* Load everything else immediately but this */}
           <Suspense
             fallback={
               <div className="animate-pulse h-full w-full rounded bg-gray-100"></div>
@@ -59,6 +60,7 @@ async function Analysis() {
     return;
   }
 
+  // Declare the file types array
   const types: {
     type: string;
     count: number;
@@ -72,11 +74,13 @@ async function Analysis() {
 
   files.forEach((file) => {
     const type = file.file_type;
+    // Linear search
     const index = types.findIndex((x) => x.type === type);
     if (index === -1) {
+      // If the type is not found, add it to the array
       types.push({ type, count: 1 });
     } else {
-      const typeItem = types[index];
+      const typeItem = types[index]; // Lets typescript know that this is not undefined
       if (typeItem) {
         if (typeItem.count) {
           typeItem.count += 1;
@@ -86,10 +90,10 @@ async function Analysis() {
   });
 
   const fileSizes = await database.file.findMany({
-    where: { user_id: user.user_id },
-    select: { file_size: true, file_name: true },
-    orderBy: { file_size: "desc" },
-    take: 8,
+    where: { user_id: user.user_id }, // WHERE user_id = user.user_id
+    select: { file_size: true, file_name: true }, // SELECT file_size, file_name
+    orderBy: { file_size: "desc" }, // ORDER BY file_size DESC
+    take: 8, // LIMIT 8
   });
 
   const nothingToAnalyse = types.length === 0 && fileSizes.length === 0;

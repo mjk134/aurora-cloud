@@ -1,6 +1,5 @@
 import SignupForm from "../../components/forms/signup-form";
 import GradientBackground from "../../components/gradient-background";
-import Input from "../../components/ui/input";
 import { signUpAction } from "./actions";
 
 export default function SignUp() {
@@ -17,6 +16,7 @@ export default function SignUp() {
             no other information required! 
           </p>
         </div>
+        {/* All signup logic is here */}
         <SignupForm serverAction={signUpAction} />
       </div>
       <div className="text-white">© Copyright Aurora Cloud 2025</div>

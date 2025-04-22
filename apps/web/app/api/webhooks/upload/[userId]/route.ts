@@ -7,7 +7,6 @@ import {
 } from "@repo/types";
 import clientUserMap from "../../../../../lib/user-map";
 
-// Tokenate this so that this route cannot be exploited
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ userId: string }> },
@@ -133,6 +132,7 @@ export async function POST(
         );
       }
 
+      // Manually set index
       let index = 0;
       for (const chunk of dcChunks) {
         await database.discordStorage.create({

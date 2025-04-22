@@ -77,7 +77,7 @@ export async function encryptFileStream(
     },
   );
   let totallength = 0;
-  // input can be chunked https://crypto.stackexchange.com/questions/95682/why-is-possible-to-encrypt-multiple-messages-within-the-same-stream-in-aes
+  // input can be chunked
   for await (const chunk of input) {
     const encrypted = cipher.update(Uint8Array.from(chunk as Buffer));
     totallength += encrypted.length

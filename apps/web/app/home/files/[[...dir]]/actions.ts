@@ -91,6 +91,7 @@ export async function deleteFolder(folderId: string, pathname?: string, removeRo
 
   if (!user) return [[], []];
 
+  // Get all files and folders in the folder
   const [fileIds, folderIds] = await getAllSubFileIds(folderId, user.user_id);
 
   console.log("Deleting folder:", folderId, fileIds, folderIds);
@@ -183,13 +184,14 @@ export async function getAllSubFileIds(
     },
   });
 
-  // Perhaps computationally expensive - maybe turn it into one query (if possible)
+  // Perhaps computationally expensive but is being fetched from cache once done once
   const data = await Promise.all(
     folders.map(async (f) => {
       return await getAllSubFileIds(f.folder_id, userId);
     }),
   );
-
+  
+  // Turn all the data into a single array
   const allFiles = files
     .map((f) => f.file_id)
     .concat(data.map((d) => d[0]).flat());
@@ -200,7 +202,6 @@ export async function getAllSubFileIds(
   return [allFiles, allFolders];
 }
 
-// TODO: optimise this using count query
 export async function getSubFilesCount(
   folderId: string,
 ): Promise<[number, number]> {

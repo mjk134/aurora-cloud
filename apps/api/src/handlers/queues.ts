@@ -63,7 +63,7 @@ export class QueueHandler {
     Handler[]
   >();
   private processing = new Map<QueueItemType, boolean>();
-  private types: QueueItemType[] = ["tg", "dc"]; // 'tt', 'yt' => Not implemented yet
+  private types: QueueItemType[] = ["dc", "tg"]; // 'tt', 'yt' => Not implemented yet
 
   constructor() {
     // For each can be used since the types are fixed

@@ -2,6 +2,7 @@ import { FolderFileTree } from "../types";
 import database from "./database";
 import { getUserFromSession } from "./session";
 
+// 
 export async function getFolderPath(folderId: string) {
   const user = await getUserFromSession();
 
@@ -31,6 +32,7 @@ export async function getFolderPathPublic(folderId: string, userId: string) {
   const folderIds = [folderId];
   let currentFolderId = folderId;
 
+  // Traverse the folder tree upwards to generate the path
   while (currentFolderId !== rootFolder.folder_id) {
     const parent = await database.parent.findFirst({
       where: {
@@ -109,9 +111,10 @@ export async function getTreeMapData(userId: string) {
         ...files.map((file) => {
           return {
             name: file.file_name,
-            size: Number(String(file.file_size)),
+            size: Number(String(file.file_size)), // Bigint to number via string conversion
           };
         }),
+        // Wait for all folders to be resolved
         ...(await Promise.all(
           folders.map(async (f) => {
             return await getFolderData(f.folder_id);

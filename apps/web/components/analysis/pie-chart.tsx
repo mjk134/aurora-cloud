@@ -5,7 +5,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  Label,
   Legend,
   Tooltip,
 } from "recharts";

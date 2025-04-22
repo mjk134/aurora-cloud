@@ -204,7 +204,6 @@ export class Client {
       chunkCount++;
     }
 
-
     return {
       chunks: attachments.map((a) => {
         return {
@@ -247,7 +246,7 @@ export class Client {
       // Extract message id and fetch if no url content available (only do once, if fail do it for the rest)
       const res = await fetch(url);
       const buf = await res.arrayBuffer();
-      // Fetch returns array buffer so we have to convert to a normal buffer (just changing classes, might cause perf issues)
+      // Fetch returns array buffer so we have to convert to a normal buffer (just changing classes, for different methods)
       bufArr.push(new Uint8Array(buf));
       eventEmitter.emit(
         "message",

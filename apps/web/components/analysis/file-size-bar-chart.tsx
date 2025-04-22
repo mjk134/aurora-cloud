@@ -1,12 +1,9 @@
 "use client";
 
-import mimedb from "mime-db";
 import {
   Bar,
   BarChart,
   CartesianGrid,
-  Label,
-  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -21,7 +18,6 @@ export default function FileSizeBarChart({
     file_size: bigint;
   }[];
 }) {
-
   const data = fileSizes.map((fileSize) => {
     return {
       name: fileSize.file_name,
@@ -36,17 +32,14 @@ export default function FileSizeBarChart({
       <BarChart width={300} height={400} data={data}>
         <CartesianGrid strokeDasharray="3 3" />
         <Bar dataKey="value" fill="#12bea1" />
-        <XAxis
-          dataKey="name"
-          // label={{ value: "File types", postion: "insideBottom", offset: 0 }}
-        />
+        <XAxis dataKey="name" />
         <YAxis
           label={{ value: "File size", angle: -90, position: "insideLeft" }}
           tickFormatter={(value) =>
             new Intl.NumberFormat("en-US", {
               notation: "compact",
               compactDisplay: "short",
-            }).format(value) + 'B'
+            }).format(value) + "B"
           }
         />
         <Tooltip />

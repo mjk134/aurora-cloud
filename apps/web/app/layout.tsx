@@ -9,11 +9,13 @@ const league_spartan = League_Spartan({
   variable: "--font-league-spartan",
 });
 
+// For SEO
 export const metadata = {
   title: "Aurora Cloud",
   description: "A cloud storage service.",
 };
 
+// Container for the entire app
 export default function RootLayout({
   children,
 }: {

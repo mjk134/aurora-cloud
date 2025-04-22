@@ -21,6 +21,7 @@ export default async function Search({
     return;
   }
 
+  // Type assertion for searchParams, since it will either be a singular string
   const query = asyncSearchParams.q as string | undefined;
 
   if (query) {
@@ -28,7 +29,7 @@ export default async function Search({
     files = await database.file.findMany({
       where: {
         file_name: {
-          contains: query,
+          contains: query, // WHERE "public"."File"."file_name"::text LIKE $1
         },
         user_id: user.user_id,
       },

@@ -12,7 +12,7 @@ import { EncrytedFileCacheInfo } from "../../handlers/types.js";
 const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.register(import("@fastify/multipart"), {
     limits: {
-      fileSize: Infinity, // To allow large file uploads, but for even larger files it should be streamed
+      fileSize: Infinity, // To allow large file uploads, but for even larger files it should be streamed. It's infinity for testing.
     },
   });
 
@@ -31,15 +31,12 @@ const upload: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       }),
     );
 
-
     if (!encryptedFileDataResult.success) {
       return reply.status(500).send({
         error: true,
         message: "Failed to encrypt file.",
       });
     }
-
-
 
     let params = new URLSearchParams(request.raw.url?.split("/upload")[1]);
     const encryptedFileData = encryptedFileDataResult.value;

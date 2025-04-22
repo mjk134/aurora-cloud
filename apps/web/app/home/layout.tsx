@@ -13,6 +13,7 @@ export default async function DashboardLayout({
 
   if (!user) redirect("/login");
 
+  // Sidebar is a client component so we need to pass the folder object to it
   const rootFolder = await database.folder.findFirst({
     where: {
       user_id: user.user_id,
@@ -27,7 +28,7 @@ export default async function DashboardLayout({
 
   return (
     <main className="flex md:flex-row font-sans relative flex-col min-h-screen w-full">
-      {/* Include shared UI here e.g. a header or sidebar */}
+      {/* Shared across all pages in this directory */}
       <Sidebar user={user} logout={logout} rootFolderId={rootFolder?.folder_id} />
       {children}
     </main>

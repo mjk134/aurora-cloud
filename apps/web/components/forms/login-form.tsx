@@ -47,6 +47,7 @@ export default function LoginForm({
           placeholder="e.g. aurora_cloud"
         />
         <p className="text-xs text-red-400">
+          {/* Error ternary message */}
           {state
             ? state.error
               ? state?.location === "username"

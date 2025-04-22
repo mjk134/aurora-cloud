@@ -9,10 +9,12 @@ export async function logout() {
   redirect("/login");
 }
 
-
+/**
+ * Used for getting files to render in client components.
+ */
 export async function getFiles(filesIds: string[]) {
   const user = await getUserFromSession();
-  
+
   if (!user) {
     return [];
   }
@@ -25,5 +27,4 @@ export async function getFiles(filesIds: string[]) {
       user_id: user.user_id,
     },
   });
-
 }

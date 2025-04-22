@@ -27,6 +27,7 @@ export function CreateFolderModal({
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
   
+      // Can't be empty
       if (!folderName) {
         setError("Please enter a folder name.")
         return;
@@ -35,6 +36,7 @@ export function CreateFolderModal({
         setError("Folder name must be less than 50 characters");
         return;
       }
+      // From here create folder handles navigation, set pending so the user can't spam creations
       startTransition(() => {
         createFolder(folderName, currentFolderId, pathname);
       });
@@ -83,6 +85,7 @@ export function CreateFolderModal({
                     placeholder="A very cool folder name"
                     className="w-full text-md placeholder:text-md"
                   />
+                  {/* Error message */}
                   <p className="text-xs text-red-400">{error.length !== 0 ? error : '‎'}</p>
                 </div>
               </fieldset>

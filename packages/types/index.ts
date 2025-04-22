@@ -8,7 +8,7 @@ export interface UploadResponse {
 }
 
 // All possible storage types returned by API based on queue priority
-export type QueueItemType = 'dc' | 'tg' | 'tt' | 'yt' // discord, telegram, tiktok, youtube
+export type QueueItemType = 'tg' | 'dc' | 'tg' | 'tt' | 'yt' // discord, telegram, tiktok, youtube
 
 interface DownloadData {
     encrypted: {

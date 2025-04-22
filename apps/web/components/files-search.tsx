@@ -14,10 +14,11 @@ export default function SearchFiles({
   disabled?: boolean;
 }) {
   const [focused, setFocused] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [search, setSearch] = useState(initalSearch);
+  const inputRef = useRef<HTMLInputElement>(null); // For focusing the input
+  const [search, setSearch] = useState(initalSearch); // Store search value in state
 
   const handler = (e: KeyboardEvent) => {
+    // Keybind detection
     if (e.key === "s" && e.ctrlKey) {
       e.preventDefault();
       console.log("Focus search");

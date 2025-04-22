@@ -18,6 +18,7 @@ export default function RecentFiles({
   const [pending, startTransition] = useTransition();
 
   useEffect(() => {
+    // No depenencies, so this will only run once
     const setLocalFiles = async () => {
       const localFiles = getTypedStorageItem("recentFiles");
       console.log(localFiles);

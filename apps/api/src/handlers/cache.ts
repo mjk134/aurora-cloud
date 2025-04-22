@@ -39,6 +39,7 @@ export default class CacheManager {
     const writeStream = fs.createWriteStream("../cache/" + fileId, {
       flags: "a",
     });
+    // encrypts the file and writes it to the cache
     const encrypted = await encryptFileStream(readable, writeStream);
     this.cache.set(fileId, { type: "uploading", length: encrypted.length });
     console.log(encrypted.length + " bytes of data encrypted."); // Debugging

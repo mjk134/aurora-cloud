@@ -163,6 +163,8 @@ export async function deleteSession() {
       },
     });
 
+    // Delete the session cookie
+    // By setting the cookie to expire in the past
     (await cookies()).set("snowflake", "", {
       httpOnly: true,
       secure: true,

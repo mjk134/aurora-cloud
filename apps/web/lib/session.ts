@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import db from "./database";
-import { Users } from "@prisma/client";
+import { Session as PrismaSession, Users } from "@prisma/client";
+import { tryCatch } from "@repo/util";
 
 export async function createSession(id: string) {
   const currentSession = await getSession();
@@ -64,11 +65,20 @@ export const getVerfiedSession = async () => {
 
   if (!session) return null;
 
-  const data = await db.session.findUnique({
-    where: {
-      token: session.id,
-    },
-  });
+  const result = await tryCatch<PrismaSession | null>(
+    db.session.findUnique({
+      where: {
+        token: session.id,
+      },
+    }),
+  );
+
+  if (!result.success) {
+    console.log("[Session Error]", result.value);
+    return null;
+  }
+
+  const data = result.value;
 
   // Check if the session is expired
   if (data && new Date(data.expires) < new Date()) {
